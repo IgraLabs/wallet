@@ -43,4 +43,10 @@ declare global {
   }
 }
 
+declare module 'lodash' {
+  interface LoDashStatic {
+    reverse<T>(array: ArrayLike<T>): T[];
+  }
+}
+
 export {};

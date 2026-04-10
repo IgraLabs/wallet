@@ -9,6 +9,7 @@ import { isEVMHarmonyTransport, isEVMNetwork, isSolanaNetwork, isSolanaTransport
 
 import * as ethereum from './ethereum';
 import { WALLET_CONNECT_ETH_SIGN_TYPES } from './ethereum/types';
+import { responseRejected } from './responseRejected';
 import * as solana from './solana';
 import { WALLET_CONNECT_SOLANA_SIGN_TYPES } from './solana/types';
 
@@ -41,22 +42,42 @@ export async function handleSessionRequest({ event, dispatch, realm, web3Wallet,
     const activeSessions = await web3Wallet?.getActiveSessions();
 
     if (!activeSessions || !activeSessions[topic]) {
+      try {
+        await web3Wallet.respondSessionRequest({ topic, response: responseRejected(id) });
+      } catch (e) {
+        handleError(e, 'ERROR_CONTEXT_PLACEHOLDER');
+      }
       return handleError('Topic not found', 'ERROR_CONTEXT_PLACEHOLDER', 'generic');
     }
 
     const supportedWallet = findSupportedWallet({ activeSessions, chainId, topic });
 
     if (!supportedWallet) {
+      try {
+        await web3Wallet.respondSessionRequest({ topic, response: responseRejected(id) });
+      } catch (e) {
+        handleError(e, 'ERROR_CONTEXT_PLACEHOLDER');
+      }
       return handleError('Account not found', 'ERROR_CONTEXT_PLACEHOLDER', 'generic');
     }
 
     const foundWallet: RealmWallet | undefined = await findUserWallet(realm, supportedWallet);
 
     if (!foundWallet) {
+      try {
+        await web3Wallet.respondSessionRequest({ topic, response: responseRejected(id) });
+      } catch (e) {
+        handleError(e, 'ERROR_CONTEXT_PLACEHOLDER');
+      }
       return handleError('Wallet not found', 'ERROR_CONTEXT_PLACEHOLDER', 'generic');
     }
 
     if (typeof foundWallet.accountIdx !== 'number') {
+      try {
+        await web3Wallet.respondSessionRequest({ topic, response: responseRejected(id) });
+      } catch (e) {
+        handleError(e, 'ERROR_CONTEXT_PLACEHOLDER');
+      }
       return handleError('Wallet not found', 'ERROR_CONTEXT_PLACEHOLDER', 'generic');
     }
 
@@ -171,6 +192,32 @@ export async function handleSessionRequest({ event, dispatch, realm, web3Wallet,
           realm,
           topic,
           transaction: requestParams as solana.SolanaSignTransaction,
+          transport,
+          web3Wallet,
+          getSeed,
+          verified,
+        });
+        break;
+      }
+
+      case WALLET_CONNECT_SOLANA_SIGN_TYPES.SIGN_ALL_TRANSACTIONS: {
+        if (!isSolanaNetwork(network) || !isSolanaTransport(transport)) {
+          handleError(`Unsupported network: ${network}`, 'ERROR_CONTEXT_PLACEHOLDER', {
+            icon: 'plug-disconnected',
+            text: loc.walletConnect.unsupported_network,
+          });
+          break;
+        }
+
+        await solana.handleSessionRequestAllTransactions({
+          activeSessions,
+          foundWallet,
+          id,
+          dispatch,
+          network,
+          realm,
+          topic,
+          params: requestParams as solana.SolanaSignAllTransactions,
           transport,
           web3Wallet,
           getSeed,

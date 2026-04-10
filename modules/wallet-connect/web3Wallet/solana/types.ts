@@ -3,6 +3,7 @@ import type * as web3 from '@solana/web3.js';
 export enum WALLET_CONNECT_SOLANA_SIGN_TYPES {
   SIGN_MESSAGE = 'solana_signMessage',
   SIGN_TRANSACTION = 'solana_signTransaction',
+  SIGN_ALL_TRANSACTIONS = 'solana_signAllTransactions',
 }
 
 export type SolanaSignMessage = {
@@ -39,6 +40,10 @@ type SolanaSignTransactionRequiredFields = {
 };
 
 export type SolanaSignTransaction = SolanaSignTransactionWithDeprecatedFields | SolanaSignTransactionRequiredFields;
+
+export type SolanaSignAllTransactions = {
+  transactions: string[];
+};
 
 export type SolanaSignTransactionWeb3JS = {
   feePayer: web3.PublicKey;

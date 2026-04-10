@@ -49,7 +49,7 @@ export const deleteStaleSessionsFromRealm = async (realm: Realm, web3Wallet: IWa
   const activeSessions = await web3Wallet.getActiveSessions();
   const realmSessionTopicsToDelete: string[] = [];
   for (const realmWalletConnectTopic of realmWalletConnectSessions) {
-    if (!activeSessions[realmWalletConnectTopic.topic]) {
+    if (realmWalletConnectTopic.topic && !activeSessions[realmWalletConnectTopic.topic]) {
       realmSessionTopicsToDelete.push(realmWalletConnectTopic.topic);
     }
   }

@@ -1,5 +1,5 @@
 import { useNavigation } from '@react-navigation/native';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { Linking } from 'react-native';
 
 import { useInitialUrl } from '@/hooks/useInitialUrl';
@@ -20,6 +20,7 @@ export const useHandleConnectToDappWalletConnectRequests = () => {
   const { getSeed } = useSecuredKeychain();
   const navigation = useNavigation();
   const { saveTopicToRealm } = useWalletConnectTopicsMutations();
+  const initialUrlProcessedRef = useRef(false);
 
   const handleConnectToDappWalletConnectRequests = useCallback(
     (event: { url: string }) => {
@@ -49,9 +50,12 @@ export const useHandleConnectToDappWalletConnectRequests = () => {
 
   const { initialUrl, processingInitialUrl } = useInitialUrl();
 
-  if (!processingInitialUrl && initialUrl) {
-    handleConnectToDappWalletConnectRequests({ url: initialUrl });
-  }
+  useEffect(() => {
+    if (!processingInitialUrl && initialUrl && !initialUrlProcessedRef.current) {
+      initialUrlProcessedRef.current = true;
+      handleConnectToDappWalletConnectRequests({ url: initialUrl });
+    }
+  }, [processingInitialUrl, initialUrl, handleConnectToDappWalletConnectRequests]);
 
   useEffect(
     () => {
