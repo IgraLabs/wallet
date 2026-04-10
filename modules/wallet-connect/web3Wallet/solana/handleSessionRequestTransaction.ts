@@ -54,7 +54,10 @@ export async function handleSessionRequestTransaction({
       transaction: transaction.transaction,
       dAppOrigin: verified.origin,
     })
-    .catch(() => {});
+    .catch((error: unknown) => {
+      handleError(error, 'ERROR_CONTEXT_PLACEHOLDER');
+      return undefined;
+    });
 
   if (!preparedTransaction || preparedTransaction.isError) {
     web3Wallet.respondSessionRequest({ topic, response: responseRejected(id) });

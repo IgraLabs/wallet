@@ -8,8 +8,6 @@ import { REALM_TYPE_WALLET_CONNECT_TOPICS } from './schema';
 
 import type { RealmWalletConnectTopics } from './schema';
 
-import { handleError } from '/helpers/errorHandler';
-
 export const useWalletConnectTopicsMutations = () => {
   const realm = useRealm();
   const { runInTransaction } = useRealmTransaction();
@@ -17,22 +15,22 @@ export const useWalletConnectTopicsMutations = () => {
   const saveTopicToRealm = useCallback(
     (pairingTopic: string, topic: string, isDeepLinked: boolean) => {
       console.log('[useWalletConnectTopicsMutations] saving topic ' + topic);
-
-      try {
-        runInTransaction(() => {
-          realm.create<RealmWalletConnectTopics>(
-            REALM_TYPE_WALLET_CONNECT_TOPICS,
-            {
-              pairingTopic,
-              topic,
-              isDeepLinked,
-            },
-            Realm.UpdateMode.Never,
-          );
-        });
-      } catch (e) {
-        handleError(e, 'ERROR_CONTEXT_PLACEHOLDER');
-      }
+      runInTransaction(() => {
+        const existing = realm.objectForPrimaryKey<RealmWalletConnectTopics>(REALM_TYPE_WALLET_CONNECT_TOPICS, pairingTopic);
+        if (existing) {
+          console.log('[useWalletConnectTopicsMutations] topic already exists, skipping: ' + pairingTopic);
+          return;
+        }
+        realm.create<RealmWalletConnectTopics>(
+          REALM_TYPE_WALLET_CONNECT_TOPICS,
+          {
+            pairingTopic,
+            topic,
+            isDeepLinked,
+          },
+          Realm.UpdateMode.Never,
+        );
+      });
     },
 
     [realm, runInTransaction],

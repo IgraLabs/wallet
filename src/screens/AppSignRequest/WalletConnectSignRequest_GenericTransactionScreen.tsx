@@ -17,6 +17,7 @@ import { ConfirmationFooterWithFeeSelector } from './components/ConfirmationFoot
 import { ExpandedDetailsContent } from './components/ExpandedDetailsContent';
 import { GenericSignContent } from './components/GenericSignContent';
 import { Header } from './components/Header';
+import { TransactionAccordion, type TransactionAccordionItem } from './components/TransactionAccordion';
 
 import loc from '/loc';
 import type { DefinitionList } from '/modules/wallet-connect/types';
@@ -35,11 +36,23 @@ export interface WalletConnectSignRequest_GenericTransactionParams {
   onApprove: (fee: FeeOption | null) => void;
   onReject: () => void;
   warning?: Warning;
+  transactionsList?: TransactionAccordionItem[];
 }
 
 export const WalletConnectSignRequest_GenericTransactionScreen = ({ route, navigation }: NavigationProps<'WalletConnectSignRequest_GenericTransaction'>) => {
   const isOnline = useIsOnline();
-  const { walletId, metadata, onReject, onApprove, hideFeeSelector = false, preparedTransaction, warning, content, detailsContent } = route.params;
+  const {
+    walletId,
+    metadata,
+    onReject,
+    onApprove,
+    hideFeeSelector = false,
+    preparedTransaction,
+    warning,
+    content,
+    detailsContent,
+    transactionsList,
+  } = route.params;
   const { goBack } = navigation;
   const { height } = useWindowDimensions();
 
@@ -94,7 +107,7 @@ export const WalletConnectSignRequest_GenericTransactionScreen = ({ route, navig
           </View>
         </View>
       }
-      DetailsComponent={<ExpandedDetailsContent content={detailsContent} />}
+      DetailsComponent={transactionsList ? <TransactionAccordion transactions={transactionsList} /> : <ExpandedDetailsContent content={detailsContent} />}
       FloatingButtonsComponent={
         <ConfirmationFooterWithFeeSelector
           walletId={walletId}

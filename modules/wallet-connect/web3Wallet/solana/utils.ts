@@ -16,19 +16,22 @@ export function adaptSolanaSignTransactionToDefinitionList(data: SolanaSignTrans
   return definitionList;
 }
 
-export function getWalletConnectRespondSessionRequestResult(transaction: SolanaSignTransaction, signedTransaction: string): { signature: string } {
-  let result: { signature: string };
+export function getWalletConnectRespondSessionRequestResult(
+  transaction: SolanaSignTransaction,
+  signedTransaction: string,
+): { signature: string; transaction: string } {
+  let signature: string;
   const isLegacyTransaction = 'instructions' in transaction;
 
   if (isLegacyTransaction) {
     const signedTransaction_ = web3.Transaction.from(Buffer.from(signedTransaction, 'base64'));
 
-    result = { signature: signedTransaction_.signature ? bs58.encode(signedTransaction_.signature) : '' };
+    signature = signedTransaction_.signature ? bs58.encode(signedTransaction_.signature) : '';
   } else {
     const signedTransaction_ = web3.VersionedTransaction.deserialize(Buffer.from(signedTransaction, 'base64'));
 
-    result = { signature: bs58.encode(signedTransaction_.signatures[0]) };
+    signature = bs58.encode(signedTransaction_.signatures[0]);
   }
 
-  return result;
+  return { signature, transaction: signedTransaction };
 }

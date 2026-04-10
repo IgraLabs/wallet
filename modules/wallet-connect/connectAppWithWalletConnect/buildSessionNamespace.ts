@@ -41,7 +41,11 @@ export function buildSessionNamespace(sessionProposal: SessionProposal, accounts
   const uniqueMethodsSolana = [...new Set(methodsSolana)];
   const eventsSolana = namespacesSolana.map(([_, v]) => v.events).flat();
   const uniqueEventsSolana = [...new Set(eventsSolana)];
-  const supportedMethodsSolana: string[] = [WALLET_CONNECT_SOLANA_SIGN_TYPES.SIGN_MESSAGE, WALLET_CONNECT_SOLANA_SIGN_TYPES.SIGN_TRANSACTION];
+  const supportedMethodsSolana: string[] = [
+    WALLET_CONNECT_SOLANA_SIGN_TYPES.SIGN_MESSAGE,
+    WALLET_CONNECT_SOLANA_SIGN_TYPES.SIGN_TRANSACTION,
+    WALLET_CONNECT_SOLANA_SIGN_TYPES.SIGN_ALL_TRANSACTIONS,
+  ];
 
   const hasProposedSolana = namespacesSolana.length > 0;
   const hasSolanaWallet = accountsFromMatchedWallets.solana.length > 0;
