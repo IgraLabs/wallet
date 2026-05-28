@@ -1,9 +1,9 @@
-import { noop } from 'lodash';
 import { useCallback, useMemo } from 'react';
 import { Image, ScrollView, StyleSheet } from 'react-native';
 
 import { useAnimatedStyle, withTiming } from 'react-native-reanimated';
 
+import { CardWarning } from '@/components/CardWarning';
 import { GradientScreenView } from '@/components/Gradients';
 import { Menu, useMenu } from '@/components/Menu';
 import { SvgIcon } from '@/components/SvgIcon';
@@ -15,6 +15,7 @@ import { useWalletBackupSettings } from '@/hooks/useWalletBackupSettings';
 import { useAccounts } from '@/realm/accounts';
 import { Routes } from '@/Routes';
 import { navigationStyle } from '@/utils/navigationStyle';
+import { safelyAnimateLayout } from '@/utils/safeLayoutAnimation';
 
 import { SettingsItem, SettingsSectionHeader } from '../components';
 
@@ -22,14 +23,24 @@ import { WalletBackupWarning } from '../walletBackup';
 
 import type { SettingsNavigationProps } from '../SettingsRouter';
 
+import { showAlert } from '/helpers/showAlert';
 import loc from '/loc';
 
 export const ManageWalletsScreen = ({ navigation }: SettingsNavigationProps<'ManageWallets'>) => {
   const accounts = useAccounts();
   const { navigate } = navigation;
 
-  const { isCloudBackupSupported, isCloudBackupSuggested, isCloudBackupCompleted, isManualBackupCompleted, isAnyBackupCompleted, isAnyBackupSuggested } =
-    useWalletBackupSettings();
+  const {
+    isCloudBackupSupported,
+    isCloudBackupCreationSupported,
+    isCloudBackupSuggested,
+    isCloudBackupCompleted,
+    isManualBackupCompleted,
+    isAnyBackupCompleted,
+    isAnyBackupSuggested,
+    isCloudBackupIosWarningSuggested,
+    setCloudBackupIosWarningDismissed,
+  } = useWalletBackupSettings();
 
   useHeaderTitle(isCloudBackupSupported ? loc.settings.walletsAndBackups : loc.settings.manageWallets);
 
@@ -52,7 +63,7 @@ export const ManageWalletsScreen = ({ navigation }: SettingsNavigationProps<'Man
     navigate(Routes.SettingsWalletCloudBackup);
   };
 
-  const showCloudBackupSection = isCloudBackupSupported && isAnyBackupCompleted;
+  const showCloudBackupSection = isCloudBackupSupported && isAnyBackupCompleted && (isCloudBackupCompleted || isCloudBackupCreationSupported);
 
   const { isShown } = useMenu();
 
@@ -62,6 +73,20 @@ export const ManageWalletsScreen = ({ navigation }: SettingsNavigationProps<'Man
 
   const navigateToDeleteConfirmation = () => {
     navigation.navigate(Routes.SettingsWalletCloudBackupDelete);
+  };
+
+  const handleDismissIosWarning = async () => {
+    const confirmed = await showAlert(
+      loc.cloudBackupIosWarning.confirmTitle,
+      loc.cloudBackupIosWarning.confirmDesc,
+      loc.cloudBackupIosWarning.confirmYes,
+      loc.cloudBackupIosWarning.confirmNo,
+    );
+    if (!confirmed) {
+      return;
+    }
+    safelyAnimateLayout();
+    setCloudBackupIosWarningDismissed();
   };
 
   const backupIcon = useMemo(() => {
@@ -75,35 +100,47 @@ export const ManageWalletsScreen = ({ navigation }: SettingsNavigationProps<'Man
     <GradientScreenView>
       <ScrollView style={styles.container}>
         {!!showCloudBackupSection && (
-          <BackupMethodSelector
-            key={String(isCloudBackupCompleted)}
-            containerStyle={styles.cloudBackup}
-            icon={<Image source={require('@/assets/images/common/iCloud.png')} />}
-            onPress={navigateToCloudBackup}
-            title={isCloudBackupCompleted ? loc.walletBackupSelection.backupWithICloudCompleted : loc.walletBackupSelection.backupWithICloud}
-            subtitle={loc.walletBackupSelection.iCloudDescLong}
-            subtitleShort={isCloudBackupCompleted ? loc.walletBackupSelection.iCloudDescCompletedShort : loc.walletBackupSelection.iCloudDescShort}
-            showCompletionState
-            completionIconSize={24}
-            completed={isCloudBackupCompleted}
-            rightElement={
-              !!isCloudBackupCompleted && (
-                <Menu
-                  menuXOffset={12}
-                  type="context"
-                  items={[
-                    {
-                      title: loc.walletCloudBackupDelete.title,
-                      icon: 'trash',
-                      onPress: navigateToDeleteConfirmation,
-                    },
-                  ]}>
-                  <SvgIcon name="chevron-up" style={chevronStyle} onPress={noop} />
-                </Menu>
-              )
-            }
-            centerIcon
-          />
+          <>
+            <BackupMethodSelector
+              key={String(isCloudBackupCompleted)}
+              containerStyle={styles.cloudBackup}
+              icon={<Image source={require('@/assets/images/common/iCloud.png')} />}
+              onPress={navigateToCloudBackup}
+              title={isCloudBackupCompleted ? loc.walletBackupSelection.backupWithICloudCompleted : loc.walletBackupSelection.backupWithICloud}
+              subtitle={loc.walletBackupSelection.iCloudDescLong}
+              subtitleShort={isCloudBackupCompleted ? loc.walletBackupSelection.iCloudDescCompletedShort : loc.walletBackupSelection.iCloudDescShort}
+              showCompletionState
+              completionIconSize={24}
+              completed={isCloudBackupCompleted}
+              completionBadge={isCloudBackupIosWarningSuggested ? <SvgIcon name="error" color="yellow500" size={24} /> : undefined}
+              rightElement={
+                !!isCloudBackupCompleted && (
+                  <Menu
+                    menuXOffset={12}
+                    type="context"
+                    items={[
+                      {
+                        title: loc.walletCloudBackupDelete.title,
+                        icon: 'trash',
+                        onPress: navigateToDeleteConfirmation,
+                      },
+                    ]}>
+                    <SvgIcon name="chevron-up" style={chevronStyle} />
+                  </Menu>
+                )
+              }
+              centerIcon
+            />
+            {!!isCloudBackupIosWarningSuggested && (
+              <CardWarning
+                title={loc.cloudBackupIosWarning.title}
+                description={loc.cloudBackupIosWarning.description}
+                type="warning"
+                onClose={handleDismissIosWarning}
+                style={styles.iosWarning}
+              />
+            )}
+          </>
         )}
 
         {isAnyBackupCompleted && isAnyBackupSuggested && <WalletBackupWarning style={styles.backupSuggested} />}
@@ -131,6 +168,9 @@ const styles = StyleSheet.create({
   },
   cloudBackup: {
     marginTop: 16,
+  },
+  iosWarning: {
+    marginTop: 8,
   },
   backupSuggested: {
     marginTop: 16,

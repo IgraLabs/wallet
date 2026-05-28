@@ -16,6 +16,7 @@ import { ListHeader } from '@/components/ListHeader';
 import { NFTCollectionRow } from '@/components/NFTCollectionRow';
 import { useBottomElementSpacing } from '@/hooks/useBottomElementSpacing';
 import { useCommonSnapPoints } from '@/hooks/useCommonSnapPoints';
+import { useWalletBackupSettings } from '@/hooks/useWalletBackupSettings';
 import { useDefiPositionsQuery } from '@/reactQuery/hooks/earn/useDefiPositionsQuery';
 import type { RealmDefi } from '@/realm/defi';
 import { useIsKrakenConnectCtaHidden } from '@/realm/krakenConnect/useIsKrakenConnectCtaHidden';
@@ -28,6 +29,7 @@ import type { NavigationProps } from '@/Routes';
 import { Routes } from '@/Routes';
 import { isRealmObject } from '@/utils/isRealmObject';
 
+import { CloudBackupIosWarningCTA } from './CloudBackupIosWarningCTA';
 import { HEADER_HEIGHT } from './consts';
 import { DefiEmptyPositions } from './DefiEmptyPositions';
 import { EmptyCollections } from './EmptyCollections';
@@ -108,6 +110,7 @@ export const HomeAssetsPanel = ({ navigation }: HomeAssetsPanelProps) => {
   const { data: earnDefiPositions, isPending: isDefiPositionPending } = useDefiPositionsQuery();
   const bottomSheetRef = useRef<BottomSheetRef>(null);
   const hideConnectCTA = useIsKrakenConnectCtaHidden();
+  const { isCloudBackupIosWarningSuggested } = useWalletBackupSettings();
 
   const stickyHeaderIndex = useSharedValue(0);
 
@@ -261,9 +264,10 @@ export const HomeAssetsPanel = ({ navigation }: HomeAssetsPanelProps) => {
 
   const snapPoints = useMemo(() => [minBottomSnapPoint, ...defaultSnapPoints], [defaultSnapPoints, minBottomSnapPoint]);
 
-  const showKrakenConnectCTA = !hideConnectCTA;
+  const showCloudBackupIosWarning = isCloudBackupIosWarningSuggested;
+  const showKrakenConnectCTA = !hideConnectCTA && !showCloudBackupIosWarning;
 
-  const paddingBottom = useBottomElementSpacing(showKrakenConnectCTA ? 240 : 80);
+  const paddingBottom = useBottomElementSpacing(showCloudBackupIosWarning ? 280 : showKrakenConnectCTA ? 240 : 80);
 
   const showRecentActivity = useCallback(() => {
     bottomSheetRef.current?.snapToIndex(0);
@@ -273,7 +277,11 @@ export const HomeAssetsPanel = ({ navigation }: HomeAssetsPanelProps) => {
 
   return (
     <BottomSheet noSafeInsetTop animateOnMount ref={bottomSheetRef} snapPoints={snapPoints} index={1} dismissible={false} noBackdrop>
-      {showKrakenConnectCTA ? (
+      {showCloudBackupIosWarning ? (
+        <View style={styles.krakenConnectContainer}>
+          <CloudBackupIosWarningCTA />
+        </View>
+      ) : showKrakenConnectCTA ? (
         <View style={styles.krakenConnectContainer}>
           <KrakenConnectFundCTA />
         </View>

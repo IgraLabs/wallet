@@ -1,10 +1,10 @@
 import type { ListRenderItem } from 'react-native';
 
-import { BottomSheetFooter, BottomSheetView, useBottomSheetModal } from '@gorhom/bottom-sheet';
+import { BottomSheetFlatList, BottomSheetFooter, useBottomSheetModal } from '@gorhom/bottom-sheet';
 import { useNavigation } from '@react-navigation/native';
 import noop from 'lodash/noop';
-import { forwardRef, useCallback, useEffect, useRef } from 'react';
-import { FlatList, StyleSheet, View } from 'react-native';
+import { forwardRef, useCallback, useEffect, useMemo, useRef } from 'react';
+import { StyleSheet, View } from 'react-native';
 
 import { cancelActiveRequestsAndInvalidateCache } from '@/api/base/fetchClient';
 import type { BottomSheetModalRef } from '@/components/BottomSheet';
@@ -42,7 +42,7 @@ const ACCOUNT_SWITCH_MODAL = 'ACCOUNT_SWITCH_MODAL';
 const keyExtractor = (account: RealmAccount) => String(account.accountNumber);
 
 export const AccountSwitchSheet = forwardRef<BottomSheetModalRef>((_, ref) => {
-  const listRef = useRef<FlatList>(null);
+  const listRef = useRef<React.ComponentRef<typeof BottomSheetFlatList>>(null);
   const navigation = useNavigation();
   const { createAccount, switchAccount } = useManageAccount();
   const accounts = useAccounts().sorted('accountNumber');
@@ -93,6 +93,15 @@ export const AccountSwitchSheet = forwardRef<BottomSheetModalRef>((_, ref) => {
 
   const marginBottom = useBottomSheetPadding(false);
 
+  const LIST_HEADER_HEIGHT = 76;
+  const HANDLE_HEIGHT = 24;
+  const FOOTER_HEIGHT = 80;
+  const BOTTOM_SPACE = 35;
+  const snapPoints = useMemo(
+    () => [HANDLE_HEIGHT + LIST_HEADER_HEIGHT + accounts.length * WALLET_ITEM_HEIGHT + FOOTER_HEIGHT + BOTTOM_SPACE],
+    [accounts.length],
+  );
+
   const handleCreateNewAccount = useCallback(async () => {
     if (isOnline) {
       dismissModal();
@@ -117,25 +126,27 @@ export const AccountSwitchSheet = forwardRef<BottomSheetModalRef>((_, ref) => {
   );
 
   return (
-    <BottomSheetModal enableDynamicSizing name={ACCOUNT_SWITCH_MODAL} onChange={handleBottomSheetChange} ref={ref} footerComponent={renderFooter}>
-      <BottomSheetView>
-        <View style={[styles.header, styles.container]} testID="ManageButtonHeader">
-          <Label>{loc.accountSwitch.wallets}</Label>
-          <Button text={loc.accountSwitch.manage} onPress={handleManagePress} testID="EditAccountManageButton" />
-        </View>
-        <View style={styles.container}>
-          <WalletBackupWarning showDismissable={false} />
-        </View>
-        <FlatList
-          style={{ marginBottom, maxHeight: 9 * WALLET_ITEM_HEIGHT }}
-          data={accounts}
-          keyExtractor={keyExtractor}
-          renderItem={renderItem}
-          ref={listRef}
-          onScrollToIndexFailed={noop}
-          contentContainerStyle={styles.container}
-        />
-      </BottomSheetView>
+    <BottomSheetModal snapPoints={snapPoints} name={ACCOUNT_SWITCH_MODAL} onChange={handleBottomSheetChange} ref={ref} footerComponent={renderFooter}>
+      <BottomSheetFlatList
+        ListHeaderComponent={
+          <>
+            <View style={[styles.header, styles.container]} testID="ManageButtonHeader">
+              <Label>{loc.accountSwitch.wallets}</Label>
+              <Button text={loc.accountSwitch.manage} onPress={handleManagePress} testID="EditAccountManageButton" />
+            </View>
+            <View style={styles.container}>
+              <WalletBackupWarning showDismissable={false} />
+            </View>
+          </>
+        }
+        style={{ marginBottom }}
+        data={accounts}
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
+        ref={listRef}
+        onScrollToIndexFailed={noop}
+        contentContainerStyle={styles.container}
+      />
     </BottomSheetModal>
   );
 });

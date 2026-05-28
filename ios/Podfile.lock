@@ -1472,7 +1472,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-compat (2.17.1):
+  - react-native-compat (2.23.9):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1496,6 +1496,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+    - YttriumWrapper (= 0.10.50)
   - react-native-config (1.5.1):
     - react-native-config/App (= 1.5.1)
   - react-native-config/App (1.5.1):
@@ -2448,6 +2449,7 @@ PODS:
     - SDWebImage/Core (~> 5.17)
   - SocketRocket (0.7.1)
   - Yoga (0.0.0)
+  - YttriumWrapper (0.10.50)
   - ZXingObjC/Core (3.6.9)
   - ZXingObjC/OneD (3.6.9):
     - ZXingObjC/Core
@@ -2581,6 +2583,7 @@ SPEC REPOS:
     - SDWebImage
     - SDWebImageWebPCoder
     - SocketRocket
+    - YttriumWrapper
     - ZXingObjC
 
 EXTERNAL SOURCES:
@@ -2872,7 +2875,7 @@ SPEC CHECKSUMS:
   React-Mapbuffer: b47a3289a3fe38e665347e48579f67a37be42bb3
   React-microtasksnativemodule: c1a3d5195c3985a2246f130ad3f3cad587b79b03
   react-native-blur: b6750125c409d8aaa7ae1a1f21cf3632d24a9bd8
-  react-native-compat: b4682b50d6c93bee582d989d707503d8ca0ddec8
+  react-native-compat: e2e2ca927ade173a9344fe3a74d9459f8a9fb66b
   react-native-config: 86038147314e2e6d10ea9972022aa171e6b1d4d8
   react-native-get-random-values: 21325b2244dfa6b58878f51f9aa42821e7ba3d06
   react-native-netinfo: f0a9899081c185db1de5bb2fdc1c88c202a059ac
@@ -2936,6 +2939,7 @@ SPEC CHECKSUMS:
   SDWebImageWebPCoder: af09429398d99d524cae2fe00f6f0f6e491ed102
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: 9663a18d096f7f7e17a535cf00849db756709955
+  YttriumWrapper: d7f63336830536f1da41b745ed8bacedb04228c4
   ZXingObjC: 8898711ab495761b2dbbdec76d90164a6d7e14c5
 
 PODFILE CHECKSUM: 47ae358fc56aaa731bb5595573a3451be661e147

@@ -1,6 +1,6 @@
 import * as splToken from '@solana/spl-token';
 import * as web3 from '@solana/web3.js';
-import { ComputeBudgetProgram, Connection, clusterApiUrl } from '@solana/web3.js';
+import { ComputeBudgetProgram } from '@solana/web3.js';
 import BigNumber from 'bignumber.js';
 import bs58 from 'bs58';
 import * as ed25519 from 'ed25519-hd-key';
@@ -13,6 +13,7 @@ import type { Nft } from '@/realm/nfts';
 import type { RealmToken } from '@/realm/tokens';
 
 import { HarmonyTransport } from './HarmonyTransport';
+import { makeProxiedSolanaConnection } from './utils/solanaProxiedConnection';
 
 import type {
   BlockExplorer,
@@ -52,6 +53,9 @@ export function serializeInstruction(inst: web3.TransactionInstruction) {
   };
 }
 
+const DEFAULT_COMPUTE_UNIT_BUDGET = 200_000;
+const TOKEN_2022_COMPUTE_UNIT_BUDGET = 400_000;
+
 type SolanaTransactionPlan = {
   atas?: {
     address: web3.PublicKey;
@@ -62,11 +66,15 @@ type SolanaTransactionPlan = {
 
   instructions: web3.TransactionInstruction[];
   lookupTables?: SolanaAddressLookupTableEntry[];
+
+  computeUnitBudget?: number;
 };
 
 type SolanaPreparedTransaction = {
   tx: web3.Transaction | web3.VersionedTransaction;
   fee: string;
+
+  computeUnitBudget?: number;
 };
 
 export class SolanaHarmonyTransport extends HarmonyTransport<SolanaPreparedTransaction, SolanaTransactionPlan, unknown> {
@@ -81,6 +89,7 @@ export class SolanaHarmonyTransport extends HarmonyTransport<SolanaPreparedTrans
     const payer = await network.deriveAddress(walletData);
 
     let txPayload: SolanaSimulationInput;
+    let computeUnitBudget: number | undefined;
     if ('transaction' in transaction) {
       txPayload = { ...transaction, signatory: payer };
     } else {
@@ -95,6 +104,8 @@ export class SolanaHarmonyTransport extends HarmonyTransport<SolanaPreparedTrans
           ),
         );
       }
+
+      computeUnitBudget = transaction.computeUnitBudget;
 
       txPayload = {
         atas: transaction.atas?.map(ata => {
@@ -133,6 +144,7 @@ export class SolanaHarmonyTransport extends HarmonyTransport<SolanaPreparedTrans
       data: {
         tx: web3.VersionedTransaction.deserialize(Buffer.from(compiledTransaction, 'base64')),
         fee: baseFee,
+        computeUnitBudget,
       },
       isError: status === 'failure',
       preventativeAction,
@@ -147,7 +159,7 @@ export class SolanaHarmonyTransport extends HarmonyTransport<SolanaPreparedTrans
     tx: PreparedTransaction<SolanaPreparedTransaction>,
     fee: SolanaFeeOption,
   ): Promise<TotalFee> {
-    const computeUnitBudget = 200_000;
+    const computeUnitBudget = tx.data.computeUnitBudget ?? DEFAULT_COMPUTE_UNIT_BUDGET;
     const totalFeeMicroLamports = fee.computeUnitPriceMicroLamports * computeUnitBudget;
     const totalFeeLamports = Math.floor(totalFeeMicroLamports / 1000 / 1000);
 
@@ -218,16 +230,15 @@ export class SolanaNetwork implements Network<SolanaPreparedTransaction, SolanaT
     return { extendedPublicKey: keypair.publicKey.toBuffer() };
   }
 
-  async createSPLTransferTransaction(data: WalletData, to: string, splTokenId: string, amount: StringNumber): Promise<SolanaTransactionPlan> {
+  async createSPLTransferTransaction(data: WalletData, to: string, splTokenId: string, amount: StringNumber, decimals: number): Promise<SolanaTransactionPlan> {
     const mintAddress = getMintFromSPLToken(splTokenId);
     const fromWallet = new web3.PublicKey(Buffer.from(data.extendedPublicKey));
     const toPubkey = new web3.PublicKey(to);
     const mintPubkey = new web3.PublicKey(mintAddress);
 
-    const connection = new Connection(clusterApiUrl('mainnet-beta'));
+    const connection = makeProxiedSolanaConnection(this.isTestnet);
 
     let programId = splToken.TOKEN_PROGRAM_ID;
-
     const mintAccountInfo = await connection.getAccountInfo(mintPubkey);
     if (mintAccountInfo) {
       programId = mintAccountInfo.owner.equals(splToken.TOKEN_2022_PROGRAM_ID) ? splToken.TOKEN_2022_PROGRAM_ID : splToken.TOKEN_PROGRAM_ID;
@@ -235,6 +246,22 @@ export class SolanaNetwork implements Network<SolanaPreparedTransaction, SolanaT
 
     const fromAtaAccount = await splToken.getAssociatedTokenAddress(mintPubkey, fromWallet, false, programId, splToken.ASSOCIATED_TOKEN_PROGRAM_ID);
     const toAtaAccount = await splToken.getAssociatedTokenAddress(mintPubkey, toPubkey, false, programId, splToken.ASSOCIATED_TOKEN_PROGRAM_ID);
+
+    const isToken2022 = programId.equals(splToken.TOKEN_2022_PROGRAM_ID);
+    const transferIx = isToken2022
+      ? await splToken.createTransferCheckedWithTransferHookInstruction(
+          connection,
+          fromAtaAccount,
+          mintPubkey,
+          toAtaAccount,
+          fromWallet,
+          BigInt(amount),
+          decimals,
+          [],
+          'confirmed',
+          programId,
+        )
+      : splToken.createTransferCheckedInstruction(fromAtaAccount, mintPubkey, toAtaAccount, fromWallet, BigInt(amount), decimals, [], programId);
 
     return {
       atas: [
@@ -245,12 +272,13 @@ export class SolanaNetwork implements Network<SolanaPreparedTransaction, SolanaT
           programId,
         },
       ],
-      instructions: [splToken.createTransferInstruction(fromAtaAccount, toAtaAccount, fromWallet, parseInt(amount, 10), [], programId)],
+      instructions: [transferIx],
+      computeUnitBudget: isToken2022 ? TOKEN_2022_COMPUTE_UNIT_BUDGET : undefined,
     };
   }
 
   async createNFTTransferTransaction(data: WalletData, to: string, nft: Realmish<Nft>): Promise<SolanaTransactionPlan> {
-    return this.createSPLTransferTransaction(data, to, nft.assetId, '1');
+    return this.createSPLTransferTransaction(data, to, nft.assetId, '1', 0);
   }
 
   async createPaymentTransaction(data: WalletData, to: string, amount: StringNumber): Promise<SolanaTransactionPlan> {
@@ -262,14 +290,14 @@ export class SolanaNetwork implements Network<SolanaPreparedTransaction, SolanaT
         web3.SystemProgram.transfer({
           fromPubkey: fromPubkey,
           toPubkey: toPubkey,
-          lamports: parseInt(amount, 10),
+          lamports: BigInt(amount),
         }),
       ],
     };
   }
 
   async createTokenTransferTransaction(data: WalletData, to: string, token: RealmToken, amount: StringNumber): Promise<SolanaTransactionPlan> {
-    return this.createSPLTransferTransaction(data, to, token.assetId, amount);
+    return this.createSPLTransferTransaction(data, to, token.assetId, amount, token.metadata.decimals);
   }
 
   async deriveAddress(data: WalletData): Promise<string> {

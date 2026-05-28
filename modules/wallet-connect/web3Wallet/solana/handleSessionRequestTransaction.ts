@@ -15,7 +15,7 @@ import { adaptSolanaSignTransactionToDefinitionList, getWalletConnectRespondSess
 
 import type { SolanaSignTransaction } from './types';
 import type { ReactNavigationDispatch } from '../../types';
-import type { IWalletKit } from '@reown/walletkit/dist/types/types/client';
+import type { IWalletKit } from '@reown/walletkit';
 import type { SessionTypes, Verify } from '@walletconnect/types';
 import type Realm from 'realm';
 

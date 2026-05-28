@@ -1,5 +1,6 @@
 import { Image, StyleSheet, View } from 'react-native';
 
+import { GradientScreenView } from '@/components/Gradients';
 import { IconButton } from '@/components/IconButton';
 import { LargeHeaderPage } from '@/components/LargeHeaderPage';
 import { BackupMethodSelector } from '@/components/WalletBackup/BackupMethodSelector';
@@ -10,7 +11,6 @@ import type { OnboardingNavigationProps } from './OnboardingRouter';
 
 import loc from '/loc';
 import { CloudBackupManager } from '/modules/cloud-backup';
-import { MainGradientView } from '/modules/gradient-view';
 
 export const OnboardingImportMethodSelectionScreen = ({ navigation }: OnboardingNavigationProps<'OnboardingImportMethodSelection'>) => {
   const navigateToCloudImport = async () => {
@@ -24,7 +24,7 @@ export const OnboardingImportMethodSelectionScreen = ({ navigation }: Onboarding
   const navigateToManualImport = () => navigation.navigate(Routes.OnboardingImportWallet);
 
   return (
-    <MainGradientView style={styles.container} testID="OnboardingImportWalletMethodSelection">
+    <GradientScreenView insetHeaderHeight={false} testID="OnboardingImportWalletMethodSelection">
       <LargeHeaderPage title={loc.onboardingImportMethod.title} subtitle={loc.onboardingImportMethod.subtitle}>
         <View style={styles.selectors}>
           <BackupMethodSelector
@@ -50,14 +50,11 @@ export const OnboardingImportMethodSelectionScreen = ({ navigation }: Onboarding
           />
         </View>
       </LargeHeaderPage>
-    </MainGradientView>
+    </GradientScreenView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   selectors: {
     paddingHorizontal: 12,
     gap: 16,
