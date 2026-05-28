@@ -18,6 +18,7 @@ export enum RealmSettingsKey {
   cloudBackupCredentialID = 'cloudBackupCredentialID',
   isCloudBackupDismissed = 'isCloudBackupDismissed',
   isManualBackupDismissed = 'isManualBackupDismissed',
+  isCloudBackupIosWarningDismissed = 'isCloudBackupIosWarningDismissed',
   language = 'language',
   appOpenedCounter = 'appOpenedCounter',
   walletConnectTaskCompleted = 'walletConnectTaskCompleted',
@@ -44,6 +45,7 @@ export type SettingsType = {
   [RealmSettingsKey.cloudBackupCredentialID]: string;
   [RealmSettingsKey.isCloudBackupDismissed]: boolean;
   [RealmSettingsKey.isManualBackupDismissed]: boolean;
+  [RealmSettingsKey.isCloudBackupIosWarningDismissed]: boolean;
   [RealmSettingsKey.language]: LanguageTag;
   [RealmSettingsKey.walletConnectTaskCompleted]: boolean;
   [RealmSettingsKey.appOpenedCounter]: number;

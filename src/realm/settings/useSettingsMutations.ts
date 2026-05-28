@@ -120,6 +120,10 @@ export const useSettingsMutations = () => {
     setSettings(RealmSettingsKey.isManualBackupDismissed, true);
   }, [setSettings]);
 
+  const setCloudBackupIosWarningDismissed = useCallback(() => {
+    setSettings(RealmSettingsKey.isCloudBackupIosWarningDismissed, true);
+  }, [setSettings]);
+
   const setManualBackupCompleted = useCallback(() => {
     setSettings(RealmSettingsKey.isWalletBackupDone, true);
   }, [setSettings]);
@@ -144,6 +148,7 @@ export const useSettingsMutations = () => {
     setCloudBackupCompleted,
     setCloudBackupDismissed,
     setManualBackupDismissed,
+    setCloudBackupIosWarningDismissed,
     setManualBackupCompleted,
     removeCloudBackup,
     removeSettings,

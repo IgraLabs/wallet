@@ -13,7 +13,7 @@ import { handleSessionProposal } from './handleSessionProposal';
 import { handleSessionRequest } from './handleSessionRequest';
 
 import type { ReactNavigationDispatch } from '../types';
-import type { IWalletKit } from '@reown/walletkit/dist/types/types/client';
+import type { IWalletKit } from '@reown/walletkit';
 import type Realm from 'realm';
 
 import { WALLETCONNECT_PROJECT_ID } from '/config';

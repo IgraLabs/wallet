@@ -15,6 +15,9 @@ export const ManageWalletsBadge = () => {
     if (!isAnyBackupCompleted) {
       return <SvgIcon color="red400" name="error" />;
     }
+    if (isAnyBackupNeeded) {
+      return <SvgIcon color="yellow500" name="error" />;
+    }
     return <SvgIcon color={isAnyBackupNeeded ? 'light50' : 'green400'} name="check-circle-filled" />;
   }, [isAnyBackupCompleted, isAnyBackupNeeded]);
 

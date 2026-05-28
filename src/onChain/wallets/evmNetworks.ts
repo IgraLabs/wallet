@@ -151,8 +151,8 @@ export const avalancheCChainNetwork = new EVMNetwork({
   }),
   defaultGasLimit: 21000,
   gasUnit: 'nAVAX',
-  krakenConnectNetworkId: null,
-  krakenConnectMethodId: null,
+  krakenConnectNetworkId: '473365c2-4c95-4bd9-b5c8-974fb91c7d6b',
+  krakenConnectMethodId: '3a49b136-073c-4fcb-9747-dba1ce8aa84a',
   krakenConnectMethodName: null,
 });
 

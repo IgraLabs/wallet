@@ -67,7 +67,7 @@ export const OnboardingRouter = () => {
     })();
   }, []);
 
-  const { isCloudBackupSupported } = useWalletBackupSettings();
+  const { isCloudBackupSupported, isCloudBackupCreationSupported } = useWalletBackupSettings();
 
   return (
     <OnboardingStack.Navigator screenOptions={{ headerShadowVisible: false, headerLeft: DefaultBackButton }} initialRouteName="OnboardingIntro">
@@ -87,8 +87,12 @@ export const OnboardingRouter = () => {
         <>
           <OnboardingStack.Screen
             name="OnboardingBackupPrompt"
-            component={OnboardingBackupPromptScreenWithOptions}
-            options={OnboardingBackupPromptScreenWithOptions.navigationOptions(theme)}
+            component={isCloudBackupCreationSupported ? OnboardingBackupPromptScreenWithOptions : OnboardingBackupPromptScreen}
+            options={
+              isCloudBackupCreationSupported
+                ? OnboardingBackupPromptScreenWithOptions.navigationOptions(theme)
+                : OnboardingBackupPromptScreen.navigationOptions(theme)
+            }
           />
           <OnboardingStack.Screen
             name="OnboardingWalletCloudBackup"

@@ -41,7 +41,7 @@ type PendingBackup = {
 };
 
 export const WalletCloudBackupScreen = ({ navigation, route }: NavigationProps<'SettingsWalletCloudBackup' | 'OnboardingWalletCloudBackup'>) => {
-  const { isManualBackupCompleted, isCloudBackupCompleted, setCloudBackupCompleted } = useWalletBackupSettings();
+  const { isManualBackupCompleted, isCloudBackupCompleted, isCloudBackupCreationSupported, setCloudBackupCompleted } = useWalletBackupSettings();
   const { getMnemonic } = useSecuredKeychain();
   const [passkeyError, setPasskeyError] = useState<PasskeyErrorType>();
   const [pendingBackup, setPendingBackup] = useState<PendingBackup>();
@@ -157,7 +157,7 @@ export const WalletCloudBackupScreen = ({ navigation, route }: NavigationProps<'
       <View style={styles.container}>
         <GradientItemBackground />
         <Button
-          disabled={isCloudBackupCompleted}
+          disabled={isCloudBackupCompleted || !isCloudBackupCreationSupported}
           icon="passkey"
           text={loc.walletCloudBackup.createPasskey}
           size="large"

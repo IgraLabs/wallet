@@ -14,8 +14,7 @@ import * as solana from './solana';
 import { WALLET_CONNECT_SOLANA_SIGN_TYPES } from './solana/types';
 
 import type { ReactNavigationDispatch } from '../types';
-import type { WalletKitTypes } from '@reown/walletkit';
-import type { IWalletKit } from '@reown/walletkit/dist/types/types/client';
+import type { IWalletKit, WalletKitTypes } from '@reown/walletkit';
 import type { SessionTypes } from '@walletconnect/types';
 import type Realm from 'realm';
 

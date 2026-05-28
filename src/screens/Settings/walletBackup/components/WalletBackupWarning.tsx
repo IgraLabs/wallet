@@ -23,7 +23,7 @@ export const WalletBackupWarning = ({ style, showDismissable = true }: Props) =>
     isCloudBackupSuggested,
     setCloudBackupDismissed,
     setManualBackupDismissed,
-    isCloudBackupSupported,
+    isCloudBackupCreationSupported,
     isAnyBackupCompleted,
     isManualBackupSuggested,
   } = useWalletBackupSettings();
@@ -37,7 +37,7 @@ export const WalletBackupWarning = ({ style, showDismissable = true }: Props) =>
   const navigateToManualBackup = () => navigate(Routes.Settings, { screen: Routes.SettingsWalletBackup });
 
   const navigateToBackup = () => {
-    if (isCloudBackupSupported) {
+    if (isCloudBackupCreationSupported) {
       navigate(Routes.Settings, { screen: Routes.SettingsWalletBackupMethod });
     } else {
       navigate(Routes.Settings, { screen: Routes.SettingsWalletBackup, initial: false });

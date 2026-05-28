@@ -62,6 +62,8 @@ export const isPasskeySupported = (() => {
   return getOSMajorVersionNumber() >= 17;
 })();
 
+export const isCloudBackupCreationEnabled = false;
+
 export const CloudBackupError = (isPasskeySupported ? CloudBackup.errorCode : {}) as CloudBackupErrorCode;
 
 const backupToString = (b: CloudBackupMetadata): string =>

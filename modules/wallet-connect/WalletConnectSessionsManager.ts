@@ -2,7 +2,7 @@ import { getImplForWallet } from '@/onChain/wallets/registry';
 import type { RealmWallet } from '@/realm/wallets';
 
 import type { SessionNamespace } from './types';
-import type { IWalletKit } from '@reown/walletkit/dist/types/types/client';
+import type { IWalletKit } from '@reown/walletkit';
 import type { SessionTypes } from '@walletconnect/types';
 
 import { handleError } from '/helpers/errorHandler';

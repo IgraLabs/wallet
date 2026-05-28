@@ -15,7 +15,7 @@ import { WALLET_CONNECT_ETH_SIGN_TYPES } from './types';
 import { adaptMessageToEVMMessageSimulationInput, adaptToGenericMessage } from './utils';
 
 import type { ReactNavigationDispatch } from '../../types';
-import type { IWalletKit } from '@reown/walletkit/dist/types/types/client';
+import type { IWalletKit } from '@reown/walletkit';
 import type { SessionTypes, Verify } from '@walletconnect/types';
 import type Realm from 'realm';
 

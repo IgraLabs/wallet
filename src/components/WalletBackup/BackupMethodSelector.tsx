@@ -29,11 +29,13 @@ type Props = {
       showCompletionState?: false | never;
       completionIconSize?: never;
       subtitleShort?: never;
+      completionBadge?: never;
     }
   | {
       showCompletionState: boolean;
       completionIconSize?: number;
       subtitleShort: string;
+      completionBadge?: React.ReactElement;
     }
 );
 
@@ -52,6 +54,7 @@ export const BackupMethodSelector: React.FC<Props> = ({
   rightElement,
   highlighted,
   highlighDelayMs = 0,
+  completionBadge,
 }) => {
   const completionIconStyle = !rightElement && styles.completionState;
 
@@ -79,7 +82,7 @@ export const BackupMethodSelector: React.FC<Props> = ({
             {showCompletionState && subtitleShort ? subtitleShort : subtitle}
           </Label>
         </View>
-        {!!showCompletionState && <BackupCompletionBadge completed={completed} size={completionIconSize} style={completionIconStyle} />}
+        {!!showCompletionState && (completionBadge ?? <BackupCompletionBadge completed={completed} size={completionIconSize} style={completionIconStyle} />)}
         {rightElement}
       </View>
     </Touchable>
