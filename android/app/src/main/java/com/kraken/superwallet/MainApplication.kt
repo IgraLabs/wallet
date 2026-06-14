@@ -16,6 +16,7 @@ import expo.modules.ReactNativeHostWrapper
 import com.kraken.superwallet.modules.activityLifecycle.ActivityLifecyclePackage
 import com.kraken.superwallet.modules.boottime.BootTimePackage
 import com.kraken.superwallet.modules.gradients.WalletGradientViewPackage
+import com.kraken.superwallet.modules.igrakaspa.IgraKaspaPackage
 import com.kraken.superwallet.modules.clipboard.SensitiveClipboardPackage
 import com.kraken.superwallet.modules.minimizer.MinimizerPackage
 
@@ -30,6 +31,7 @@ class MainApplication : Application(), ReactApplication {
         packages.add(SensitiveClipboardPackage())
         packages.add(BootTimePackage())
         packages.add(WalletGradientViewPackage())
+        packages.add(IgraKaspaPackage())
         packages.add(ActivityLifecyclePackage())
         packages.add(MinimizerPackage())
         return packages

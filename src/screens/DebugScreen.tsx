@@ -70,6 +70,7 @@ import {
   recentErrors,
 } from '/helpers/errorHandler';
 import { CloudBackupManager, isPasskeySupported } from '/modules/cloud-backup';
+import IgraKaspa from '/modules/igra-kaspa';
 
 const copyToClipboard = (data: string, text: string) => {
   Clipboard.setString(String(data));
@@ -127,6 +128,7 @@ export const DebugScreen = () => {
   const deviceInfo = useDeviceInfo();
 
   const [isMeasuringPerformance, setIsMeasuringPerformance] = useState(false);
+  const [isMeasuringIgraKaspaBridge, setIsMeasuringIgraKaspaBridge] = useState(false);
   const [isLogToFileEnabled, setIsLogToFileEnabled] = useState(false);
   const [showToastForAllErrors, setShowToastForAllErrors] = useState(__DEV__);
   const navigation = useNavigation();
@@ -231,6 +233,35 @@ export const DebugScreen = () => {
     navigation.navigate(Routes.Diagnostics);
   };
 
+  const onMeasureIgraKaspaBridge = async () => {
+    setIsMeasuringIgraKaspaBridge(true);
+
+    try {
+      const status = await IgraKaspa.getBridgeStatus();
+      const nativeLoop = await IgraKaspa.benchmarkNativeLoop(256, 10_000);
+      const roundTrip256 = await IgraKaspa.benchmarkBridgeRoundTrips(256, 250);
+      const roundTrip4096 = await IgraKaspa.benchmarkBridgeRoundTrips(4096, 100);
+      const result = {
+        status,
+        nativeLoop,
+        roundTrip256,
+        roundTrip4096,
+      };
+
+      console.log('Igra Kaspa bridge benchmark', result);
+      copyToClipboard(JSON.stringify(result, null, 2), 'Igra bridge benchmark copied');
+      showToast({
+        type: 'info',
+        text: `Igra bridge 256B: ${roundTrip256.msPerRoundTrip.toFixed(2)} ms/rt`,
+        duration: 4000,
+      });
+    } catch (error) {
+      handleError(error, 'Igra Kaspa bridge benchmark failed');
+    } finally {
+      setIsMeasuringIgraKaspaBridge(false);
+    }
+  };
+
   const paddingBottom = useBottomSheetPadding();
 
   const insets = useSafeAreaInsets();
@@ -323,6 +354,14 @@ export const DebugScreen = () => {
           />
         )}
         <Button size="large" loading={isMeasuringPerformance} text="Measure performance" onPress={onMeasurePerformance} style={styles.spacing} />
+        <Button
+          size="large"
+          loading={isMeasuringIgraKaspaBridge}
+          text="Measure Igra bridge"
+          testID="MeasureIgraBridge"
+          onPress={onMeasureIgraKaspaBridge}
+          style={styles.spacing}
+        />
         <Button size="large" text="Run diagnostics" testID="RunDiagnosticsButton" onPress={onRunDiagnostics} style={styles.spacing} />
         <Button size="large" text="Show wallet state" testID="ShowWalletState" onPress={() => walletStateRef.current?.expand()} style={styles.spacing} />
       </ScrollView>
