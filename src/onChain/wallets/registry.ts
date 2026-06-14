@@ -2,6 +2,8 @@ import { entries, fromPairs, values } from 'lodash';
 
 import type { DefiNetwork } from '@/realm/defi';
 
+import { IgraCanonicalTransport } from '../igra/IgraCanonicalTransport';
+
 import { BitcoinNetwork } from './bitcoin';
 import { electrumXTransport, hdSegwitBech32Network } from './bitcoinWallets';
 import { DogecoinNetwork, dogecoinNetwork, dogecoinTransport } from './dogecoin';
@@ -13,6 +15,8 @@ import {
   blastNetwork,
   ethereumNetwork,
   ethereumSepoliaNetwork,
+  igraCanonicalNetwork,
+  igraCanonicalRpcUri,
   inkNetwork,
   inkSepoliaNetwork,
   lineaNetwork,
@@ -42,6 +46,7 @@ export const Networks = {
   avalanche: avalancheCChainNetwork,
   ink: inkNetwork,
   inkSepolia: inkSepoliaNetwork,
+  igraCanonical: igraCanonicalNetwork,
 };
 
 export const DefiNetworks = [
@@ -65,6 +70,7 @@ export const parseDefiNetworkTypeToWalletType = (networkType: DefiNetwork): Wall
 };
 
 export const evmHarmonyTransport = new EVMHarmonyTransport();
+export const igraCanonicalTransport = new IgraCanonicalTransport(igraCanonicalRpcUri);
 
 export const Transports = {
   HDsegwitBech32: electrumXTransport,
@@ -83,6 +89,7 @@ export const Transports = {
   avalanche: evmHarmonyTransport,
   ink: evmHarmonyTransport,
   inkSepolia: evmHarmonyTransport,
+  igraCanonical: igraCanonicalTransport,
 } satisfies { [x in keyof typeof Networks]: Transport<any, any, any, any, any> };
 
 export type WalletType = keyof typeof Networks;

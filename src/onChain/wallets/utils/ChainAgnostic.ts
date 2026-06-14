@@ -14,6 +14,7 @@ export class ChainAgnostic {
   static NETWORK_AVALANCHE = 'eip155:43114';
   static NETWORK_INK = 'eip155:57073';
   static NETWORK_INK_SEPOLIA = 'eip155:763373';
+  static NETWORK_IGRA_CANONICAL = 'eip155:38836';
 
   static COIN_ARBITRUM = 'eip155:42161/slip44:60';
   static COIN_ETHEREUM = 'eip155:1/slip44:60';
@@ -30,6 +31,7 @@ export class ChainAgnostic {
   static COIN_AVALANCHE = 'eip155:43114/slip44:9005';
   static COIN_INK = 'eip155:57073/slip44:60';
   static COIN_INK_SEPOLIA = 'eip155:763373/slip44:1';
+  static COIN_IGRA_CANONICAL = 'eip155:38836/slip44:111111';
 }
 
 const CAIP19_REGEX = /^([-a-z0-9]{3,8}):([-_a-zA-Z0-9]{1,32})\/([-a-z0-9]{3,8}):([-.%a-zA-Z0-9]{1,128})(?:\/([-.%a-zA-Z0-9]{1,78}))?$/;

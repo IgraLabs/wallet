@@ -409,17 +409,37 @@ export class EVMRPCTransport implements Transport<unknown, SignTransactionReques
     throw new Error('Unable to determine fee data');
   }
 
-  fetchBalance(
-    _network: Network<unknown, unknown>,
-    _wallet: WalletData,
+  async fetchBalance(
+    network: EVMNetwork,
+    wallet: WalletData,
     _data: IWalletStorage<unknown>,
     _getTokenMetadata?: (assetId: string) => Promise<AssetMetadata>,
   ): Promise<BalanceResponse[]> {
-    throw new Error('Method not implemented.');
+    const address = await network.deriveAddress(wallet);
+    const balance = await this.provider.getBalance(address);
+
+    return [
+      {
+        balance: {
+          token: network.nativeTokenCaipId,
+          value: balance.toString(),
+        },
+        metadata: {
+          decimals: network.nativeTokenDecimals,
+          label: network.nativeTokenLabel ?? network.label,
+          symbol: network.nativeTokenSymbol,
+          reputation: undefined,
+          logoUrl: undefined,
+        },
+      },
+    ];
   }
 
-  estimateDefaultTransactionCost(): Promise<TotalFee> {
-    throw new Error('Method not implemented.');
+  async estimateDefaultTransactionCost(network: EVMNetwork, wallet: WalletData, _store: unknown, fee: EVMFeeOption): Promise<TotalFee> {
+    if (!network.defaultGasLimit) {
+      throw Error('Estimate not supported, missing default gas limit');
+    }
+    return await estimateTransactionCost(network, wallet, { data: { gasLimit: network.defaultGasLimit } }, fee);
   }
 
   async fetchTransactions(

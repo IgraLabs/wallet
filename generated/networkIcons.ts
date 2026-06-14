@@ -75,6 +75,9 @@ const mapNetworkNameToNetworkIconName = (networkName: string) => {
     case 'inksepolia':
       networkIconName = 'ink-sepolia';
       break;
+    case 'igracanonical':
+      networkIconName = 'ethereum';
+      break;
   }
 
   return networkIconName;

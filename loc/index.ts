@@ -64,7 +64,7 @@ const config = {
   'vi-VN': vi_VN,
 } satisfies Partial<Record<LanguageTag, object>>;
 
-export const loc = new Localization<StringsJSON>(config as Record<LanguageTag, StringsJSON>);
+export const loc = new Localization<StringsJSON>(config as unknown as Record<LanguageTag, StringsJSON>);
 
 export const getCurrentLanguage = () => loc.getLanguage() as LanguageTag;
 

@@ -1,5 +1,6 @@
 import { AvascanCChain, EVMNetwork, Etherscan } from './evm';
 
+import { IGRA_CANONICAL_RPC_URI } from '/config';
 import loc from '/loc';
 
 export const ethereumNetwork = new EVMNetwork({
@@ -182,3 +183,20 @@ export const inkSepoliaNetwork = new EVMNetwork({
   krakenConnectMethodId: null,
   krakenConnectMethodName: null,
 });
+
+export const igraCanonicalNetwork = new EVMNetwork({
+  chainId: 38836,
+  nativeTokenSlipId: 111111,
+  nativeTokenSymbol: 'iKAS',
+  nativeTokenLabel: 'Igra KAS',
+  label: 'Igra Canonical',
+  blockExplorer: undefined,
+  isTestnet: true,
+  disable1559: true,
+  defaultGasLimit: 21000,
+  krakenConnectNetworkId: null,
+  krakenConnectMethodId: null,
+  krakenConnectMethodName: null,
+});
+
+export const igraCanonicalRpcUri = IGRA_CANONICAL_RPC_URI;
