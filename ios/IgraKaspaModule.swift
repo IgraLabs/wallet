@@ -14,14 +14,20 @@ class IgraKaspaModule: NSObject {
 
     @objc(getBridgeStatus:rejecter:)
     func getBridgeStatus(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
-        resolve([
-            "moduleName": "IgraKaspa",
-            "bridgeVersion": bridgeVersion,
-            "backend": "swift-placeholder",
-            "rustBackend": false,
-            "supportsCarrierSigning": false,
-            "supportsBridgeBenchmark": true,
-        ])
+        do {
+            resolve(try decodeRustJson(igra_kaspa_backend_status_json()))
+        } catch {
+            resolve([
+                "moduleName": "IgraKaspa",
+                "bridgeVersion": bridgeVersion,
+                "backend": "swift-placeholder",
+                "rustBackend": false,
+                "supportsCarrierSigning": false,
+                "supportsBridgeBenchmark": true,
+                "supportsCarrierAddressDerivation": false,
+                "rustBackendLoadError": error.localizedDescription,
+            ])
+        }
     }
 
     @objc(echoPayload:resolver:rejecter:)
@@ -62,29 +68,104 @@ class IgraKaspaModule: NSObject {
 
     @objc(deriveCarrierAddress:resolver:rejecter:)
     func deriveCarrierAddress(_ params: NSDictionary, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
-        rejectRustBackendMissing(reject, method: "deriveCarrierAddress")
+        callRustCarrierMethod(
+            params,
+            resolver: resolve,
+            rejecter: reject,
+            method: "deriveCarrierAddress",
+            rustCall: igra_kaspa_derive_carrier_address_json
+        )
     }
 
     @objc(getCarrierBalance:resolver:rejecter:)
     func getCarrierBalance(_ params: NSDictionary, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
-        rejectRustBackendMissing(reject, method: "getCarrierBalance")
+        reject(
+            "E_IGRA_KASPA_CARRIER_BALANCE_UNIMPLEMENTED",
+            "getCarrierBalance is not implemented in the Igra Kaspa native module yet.",
+            nil
+        )
     }
 
     @objc(buildAndSignCarrierTx:resolver:rejecter:)
     func buildAndSignCarrierTx(_ params: NSDictionary, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
-        rejectRustBackendMissing(reject, method: "buildAndSignCarrierTx")
+        callRustCarrierMethod(
+            params,
+            resolver: resolve,
+            rejecter: reject,
+            method: "buildAndSignCarrierTx",
+            rustCall: igra_kaspa_build_and_sign_carrier_tx_json
+        )
     }
 
     @objc(submitCarrierTx:resolver:rejecter:)
     func submitCarrierTx(_ params: NSDictionary, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
-        rejectRustBackendMissing(reject, method: "submitCarrierTx")
+        callRustCarrierMethod(
+            params,
+            resolver: resolve,
+            rejecter: reject,
+            method: "submitCarrierTx",
+            rustCall: igra_kaspa_submit_carrier_tx_json
+        )
     }
 
-    private func rejectRustBackendMissing(_ reject: RCTPromiseRejectBlock, method: String) {
+    private func callRustCarrierMethod(
+        _ params: NSDictionary,
+        resolver resolve: @escaping RCTPromiseResolveBlock,
+        rejecter reject: @escaping RCTPromiseRejectBlock,
+        method: String,
+        rustCall: (UnsafePointer<CChar>?) -> UnsafeMutablePointer<CChar>?
+    ) {
+        do {
+            let json = try encodeJson(params)
+            let response = try json.withCString { paramsPointer in
+                try decodeRustJson(rustCall(paramsPointer))
+            }
+            resolve(response)
+        } catch {
+            rejectRustError(reject, method: method, error: error)
+        }
+    }
+
+    private func encodeJson(_ params: NSDictionary) throws -> String {
+        let data = try JSONSerialization.data(withJSONObject: params, options: [])
+        guard let json = String(data: data, encoding: .utf8) else {
+            throw RustBridgeError(message: "failed to UTF-8 encode params JSON")
+        }
+        return json
+    }
+
+    private func decodeRustJson(_ pointer: UnsafeMutablePointer<CChar>?) throws -> NSDictionary {
+        guard let pointer else {
+            throw RustBridgeError(message: "Rust backend returned a null JSON pointer")
+        }
+        defer {
+            igra_kaspa_free_string(pointer)
+        }
+
+        let json = String(cString: pointer)
+        guard let data = json.data(using: .utf8) else {
+            throw RustBridgeError(message: "Rust backend returned non UTF-8 JSON")
+        }
+        let object = try JSONSerialization.jsonObject(with: data, options: [])
+        guard let dictionary = object as? NSDictionary else {
+            throw RustBridgeError(message: "Rust backend returned non-object JSON")
+        }
+        if let errorCode = dictionary["errorCode"] as? String, !errorCode.isEmpty {
+            let message = dictionary["message"] as? String ?? "IgraKaspa native backend failed"
+            throw RustBackendError(code: errorCode, message: message)
+        }
+        return dictionary
+    }
+
+    private func rejectRustError(_ reject: RCTPromiseRejectBlock, method: String, error: Error) {
+        if let error = error as? RustBackendError {
+            reject(error.code, error.message, nil)
+            return
+        }
         reject(
-            "E_IGRA_KASPA_RUST_BACKEND_MISSING",
-            "\(method) requires the Rusty-Kaspa native backend. The RN bridge is present, but carrier signing is intentionally disabled.",
-            nil
+            "E_IGRA_KASPA_RUST_BRIDGE_FAILED",
+            "\(method) failed in the iOS Rusty-Kaspa native backend: \(error.localizedDescription)",
+            error
         )
     }
 
@@ -94,5 +175,22 @@ class IgraKaspaModule: NSObject {
             hash = (hash &* 31) ^ Int(scalar.value)
         }
         return hash
+    }
+}
+
+private struct RustBackendError: LocalizedError {
+    let code: String
+    let message: String
+
+    var errorDescription: String? {
+        message
+    }
+}
+
+private struct RustBridgeError: LocalizedError {
+    let message: String
+
+    var errorDescription: String? {
+        message
     }
 }

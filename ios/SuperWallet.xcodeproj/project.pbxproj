@@ -29,14 +29,14 @@
 		D37417BC2B19FB54002724D7 /* BootTimeModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = D37417BA2B19FB54002724D7 /* BootTimeModule.swift */; };
 		D37417BE2B19FB72002724D7 /* BootTimeModule.m in Sources */ = {isa = PBXBuildFile; fileRef = D37417BD2B19FB72002724D7 /* BootTimeModule.m */; };
 		D37417BF2B19FB72002724D7 /* BootTimeModule.m in Sources */ = {isa = PBXBuildFile; fileRef = D37417BD2B19FB72002724D7 /* BootTimeModule.m */; };
-		D4A000012EEC000100000001 /* IgraKaspaModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A000032EEC000100000001 /* IgraKaspaModule.swift */; };
-		D4A000022EEC000100000001 /* IgraKaspaModule.m in Sources */ = {isa = PBXBuildFile; fileRef = D4A000042EEC000100000001 /* IgraKaspaModule.m */; };
 		D3BD2A172C3EAAB700792CBB /* CloudBackupModule.m in Sources */ = {isa = PBXBuildFile; fileRef = D3BD2A162C3EAAB700792CBB /* CloudBackupModule.m */; };
 		D3BD2A192C3EAAC400792CBB /* CloudBackupModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3BD2A182C3EAAC400792CBB /* CloudBackupModule.swift */; };
 		D3C8A2F02B8D49EC00A8A59C /* WalletGradientViewManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D3C8A2EF2B8D49EC00A8A59C /* WalletGradientViewManager.m */; };
 		D3C8A2F42B8D4F8B00A8A59C /* SwiftUIWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C8A2F32B8D4F8B00A8A59C /* SwiftUIWrapper.swift */; };
 		D3C8A2F92B8E77E600A8A59C /* MainGradientViewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C8A2F82B8E77E600A8A59C /* MainGradientViewManager.swift */; };
 		D3C8A2FB2B8E782C00A8A59C /* SheetGradientViewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C8A2FA2B8E782C00A8A59C /* SheetGradientViewManager.swift */; };
+		D4A000012EEC000100000001 /* IgraKaspaModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A000032EEC000100000001 /* IgraKaspaModule.swift */; };
+		D4A000022EEC000100000001 /* IgraKaspaModule.m in Sources */ = {isa = PBXBuildFile; fileRef = D4A000042EEC000100000001 /* IgraKaspaModule.m */; };
 		E5F5FAAE28181BE60076D6DA /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = E5F5FAAD28181BE60076D6DA /* AppDelegate.mm */; };
 /* End PBXBuildFile section */
 
@@ -76,14 +76,17 @@
 		D37417B92B19FB54002724D7 /* SuperWalletTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SuperWalletTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		D37417BA2B19FB54002724D7 /* BootTimeModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BootTimeModule.swift; sourceTree = "<group>"; };
 		D37417BD2B19FB72002724D7 /* BootTimeModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BootTimeModule.m; sourceTree = "<group>"; };
-		D4A000032EEC000100000001 /* IgraKaspaModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IgraKaspaModule.swift; sourceTree = "<group>"; };
-		D4A000042EEC000100000001 /* IgraKaspaModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IgraKaspaModule.m; sourceTree = "<group>"; };
 		D3BD2A162C3EAAB700792CBB /* CloudBackupModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CloudBackupModule.m; sourceTree = "<group>"; };
 		D3BD2A182C3EAAC400792CBB /* CloudBackupModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudBackupModule.swift; sourceTree = "<group>"; };
 		D3C8A2EF2B8D49EC00A8A59C /* WalletGradientViewManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WalletGradientViewManager.m; sourceTree = "<group>"; };
 		D3C8A2F32B8D4F8B00A8A59C /* SwiftUIWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIWrapper.swift; sourceTree = "<group>"; };
 		D3C8A2F82B8E77E600A8A59C /* MainGradientViewManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainGradientViewManager.swift; sourceTree = "<group>"; };
 		D3C8A2FA2B8E782C00A8A59C /* SheetGradientViewManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SheetGradientViewManager.swift; sourceTree = "<group>"; };
+		D4A000032EEC000100000001 /* IgraKaspaModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IgraKaspaModule.swift; sourceTree = "<group>"; };
+		D4A000042EEC000100000001 /* IgraKaspaModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IgraKaspaModule.m; sourceTree = "<group>"; };
+		D4A000062EEC000100000001 /* IgraKaspaRust.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IgraKaspaRust.h; sourceTree = "<group>"; };
+		D4A000072EEC000100000001 /* build_igra_kaspa_rust.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = scripts/build_igra_kaspa_rust.sh; sourceTree = "<group>"; };
+		D4A000092EEC000100000001 /* SuperWallet-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SuperWallet-Bridging-Header.h"; sourceTree = "<group>"; };
 		E5F5FAAD28181BE60076D6DA /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = SuperWallet/AppDelegate.mm; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F3783E19924E35350C391E85 /* libPods-SuperWallet.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-SuperWallet.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -150,6 +153,7 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				13B07FB71A68108700A75B9A /* main.m */,
 				8157629929BF7F3800C5F183 /* BootSplash.storyboard */,
+				D4A000092EEC000100000001 /* SuperWallet-Bridging-Header.h */,
 				D37417B92B19FB54002724D7 /* SuperWalletTests-Bridging-Header.h */,
 			);
 			name = SuperWallet;
@@ -240,15 +244,6 @@
 			name = BootTime;
 			sourceTree = "<group>";
 		};
-		D4A000052EEC000100000001 /* IgraKaspa */ = {
-			isa = PBXGroup;
-			children = (
-				D4A000032EEC000100000001 /* IgraKaspaModule.swift */,
-				D4A000042EEC000100000001 /* IgraKaspaModule.m */,
-			);
-			name = IgraKaspa;
-			sourceTree = "<group>";
-		};
 		D3BD2A152C3EAA6300792CBB /* CloudBackup */ = {
 			isa = PBXGroup;
 			children = (
@@ -267,6 +262,17 @@
 				D3C8A2FA2B8E782C00A8A59C /* SheetGradientViewManager.swift */,
 			);
 			name = WalletGradient;
+			sourceTree = "<group>";
+		};
+		D4A000052EEC000100000001 /* IgraKaspa */ = {
+			isa = PBXGroup;
+			children = (
+				D4A000032EEC000100000001 /* IgraKaspaModule.swift */,
+				D4A000042EEC000100000001 /* IgraKaspaModule.m */,
+				D4A000062EEC000100000001 /* IgraKaspaRust.h */,
+				D4A000072EEC000100000001 /* build_igra_kaspa_rust.sh */,
+			);
+			name = IgraKaspa;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -297,6 +303,7 @@
 				4F78989B2E3BD2F1898A8E07 /* [CP] Check Pods Manifest.lock */,
 				FD10A7F022414F080027D42C /* Start Packager */,
 				1E495878561826DB700DD66D /* [Expo] Configure project */,
+				D4A000082EEC000100000001 /* Build Igra Kaspa Rust backend */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
@@ -454,6 +461,24 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-SuperWallet/Pods-SuperWallet-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
+		D4A000082EEC000100000001 /* Build Igra Kaspa Rust backend */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${SRCROOT}/../native/igra-kaspa/Cargo.toml",
+				"${SRCROOT}/../native/igra-kaspa/src/lib.rs",
+			);
+			name = "Build Igra Kaspa Rust backend";
+			outputPaths = (
+				"${SRCROOT}/../native/igra-kaspa/target/ios-universal/${PLATFORM_NAME}/libigra_kaspa.a",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/scripts/build_igra_kaspa_rust.sh\"\n";
+		};
 		E40C5303629E92D2A294A5F0 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -553,6 +578,7 @@
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(SDKROOT)/usr/lib/swift",
+					"$(SRCROOT)/../native/igra-kaspa/target/ios-universal/$(PLATFORM_NAME)",
 					"$(inherited)",
 				);
 				OTHER_LDFLAGS = (
@@ -587,6 +613,7 @@
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(SDKROOT)/usr/lib/swift",
+					"$(SRCROOT)/../native/igra-kaspa/target/ios-universal/$(PLATFORM_NAME)",
 					"$(inherited)",
 				);
 				OTHER_LDFLAGS = (
@@ -631,11 +658,13 @@
 					"$(inherited)",
 					"-ObjC",
 					"-lc++",
+					"$(SRCROOT)/../native/igra-kaspa/target/ios-universal/$(PLATFORM_NAME)/libigra_kaspa.a",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = com.kraken.superwallet.app;
 				PRODUCT_NAME = SuperWallet;
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "SuperWallet-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -663,17 +692,20 @@
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(SDKROOT)/usr/lib/swift",
+					"$(SRCROOT)/../native/igra-kaspa/target/ios-universal/$(PLATFORM_NAME)",
 					"$(inherited)",
 				);
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
 					"-lc++",
+					"$(SRCROOT)/../native/igra-kaspa/target/ios-universal/$(PLATFORM_NAME)/libigra_kaspa.a",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
 				PRODUCT_BUNDLE_IDENTIFIER = com.kraken.superwallet.app;
 				PRODUCT_NAME = SuperWallet;
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "SuperWallet-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 				VERSIONING_SYSTEM = "apple-generic";

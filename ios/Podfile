@@ -42,13 +42,19 @@ target 'SuperWallet' do
     )
 
     # Workaround Xcode 26 "unable to find module dependency" for CatCrypto/Argon2/MD6/SHA3
-    # Force disable Swift Explicit Module Builds for problematic pods
+    # Force disable Swift Explicit Module Builds for problematic pods.
+    # Also keep fmt on C++17; Xcode 26's C++20 consteval checks reject fmt 11.0.2.
     installer.pods_project.targets.each do |target|
       if ["RNArgon2", "CatCrypto"].include?(target.name)
         target.build_configurations.each do |config|
           config.build_settings["BUILD_LIBRARY_FOR_DISTRIBUTION"] = "NO"
           config.build_settings["SWIFT_STRICT_CONCURRENCY"] = "complete"
           config.build_settings["SWIFT_ENABLE_EXPLICIT_MODULES"] = "NO"
+        end
+      end
+      if target.name == "fmt"
+        target.build_configurations.each do |config|
+          config.build_settings["CLANG_CXX_LANGUAGE_STANDARD"] = "c++17"
         end
       end
     end

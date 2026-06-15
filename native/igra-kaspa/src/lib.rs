@@ -1,7 +1,9 @@
 use jni::objects::{JClass, JString};
 use jni::sys::jstring;
 use jni::JNIEnv;
-use kaspa_addresses::{Address as KaspaAddress, Prefix as KaspaAddressPrefix, Version as KaspaAddressVersion};
+use kaspa_addresses::{
+    Address as KaspaAddress, Prefix as KaspaAddressPrefix, Version as KaspaAddressVersion,
+};
 use kaspa_bip32::secp256k1::SecretKey as KaspaSecretKey;
 use kaspa_bip32::{
     ChildNumber as KaspaChildNumber, DerivationPath as KaspaDerivationPath,
@@ -23,9 +25,23 @@ use kaspa_grpc_client::GrpcClient;
 use kaspa_rpc_core::{api::rpc::RpcApi, RpcTransaction, RpcUtxosByAddressesEntry};
 use kaspa_txscript::pay_to_address_script;
 use serde::{Deserialize, Serialize};
+use std::ffi::{CStr, CString};
+use std::os::raw::c_char;
 use std::time::{Duration, Instant};
+#[cfg(target_os = "ios")]
+use std::{alloc, ptr};
 
 const BACKEND_NAME: &str = "rusty-kaspa-jni";
+const C_ABI_BACKEND_NAME: &str = "rusty-kaspa-c-abi";
+
+#[cfg(target_os = "ios")]
+#[no_mangle]
+pub unsafe extern "C" fn sys_alloc_aligned(bytes: usize, align: usize) -> *mut u8 {
+    let Ok(layout) = alloc::Layout::from_size_align(bytes, align) else {
+        return ptr::null_mut();
+    };
+    alloc::alloc(layout)
+}
 const BACKEND_VERSION: &str = "0.1.0";
 const IGRA_VERSION: u8 = 0x9;
 const IGRA_CANONICAL_RAW_TX_TYPE: u8 = 0x04;
@@ -214,6 +230,76 @@ pub extern "system" fn Java_com_kraken_superwallet_modules_igrakaspa_IgraKaspaRu
     }
 }
 
+#[no_mangle]
+pub extern "C" fn igra_kaspa_backend_status_json() -> *mut c_char {
+    to_c_json(&BridgeStatus {
+        module_name: "IgraKaspa",
+        bridge_version: BACKEND_VERSION,
+        backend: C_ABI_BACKEND_NAME,
+        rust_backend: true,
+        supports_carrier_signing: true,
+        supports_bridge_benchmark: true,
+        supports_carrier_address_derivation: true,
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn igra_kaspa_derive_carrier_address_json(
+    params_json: *const c_char,
+) -> *mut c_char {
+    let result = read_c_string(params_json)
+        .and_then(|params_json| derive_carrier_address_json(&params_json));
+
+    match result {
+        Ok(response) => to_c_json(&response),
+        Err(message) => to_c_json(&ErrorResponse {
+            error_code: "E_IGRA_KASPA_RUST_DERIVE_FAILED",
+            message,
+        }),
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn igra_kaspa_build_and_sign_carrier_tx_json(
+    params_json: *const c_char,
+) -> *mut c_char {
+    let result = read_c_string(params_json)
+        .and_then(|params_json| build_and_sign_carrier_tx_json(&params_json));
+
+    match result {
+        Ok(response) => to_c_json(&response),
+        Err(message) => to_c_json(&ErrorResponse {
+            error_code: "E_IGRA_KASPA_RUST_BUILD_SIGN_FAILED",
+            message,
+        }),
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn igra_kaspa_submit_carrier_tx_json(params_json: *const c_char) -> *mut c_char {
+    let result =
+        read_c_string(params_json).and_then(|params_json| submit_carrier_tx_json(&params_json));
+
+    match result {
+        Ok(response) => to_c_json(&response),
+        Err(message) => to_c_json(&ErrorResponse {
+            error_code: "E_IGRA_KASPA_RUST_SUBMIT_FAILED",
+            message,
+        }),
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn igra_kaspa_free_string(value: *mut c_char) {
+    if value.is_null() {
+        return;
+    }
+
+    unsafe {
+        let _ = CString::from_raw(value);
+    }
+}
+
 fn derive_carrier_address_json(params_json: &str) -> Result<DeriveCarrierAddressResponse, String> {
     let request: DeriveCarrierAddressRequest = serde_json::from_str(params_json)
         .map_err(|err| format!("invalid deriveCarrierAddress params JSON: {err}"))?;
@@ -301,7 +387,9 @@ struct BuiltCarrierTx {
     l2data_bytes: usize,
 }
 
-fn build_signed_carrier_tx(request: &BuildAndSignCarrierTxRequest) -> Result<BuiltCarrierTx, String> {
+fn build_signed_carrier_tx(
+    request: &BuildAndSignCarrierTxRequest,
+) -> Result<BuiltCarrierTx, String> {
     let seed = decode_seed_hex(request.seed_hex.as_deref().ok_or_else(|| {
         "buildAndSignCarrierTx requires seedHex from the unlocked wallet seed buffer".to_string()
     })?)?;
@@ -313,7 +401,10 @@ fn build_signed_carrier_tx(request: &BuildAndSignCarrierTxRequest) -> Result<Bui
         "payloadHex",
     )?;
     validate_canonical_raw_tx(&raw_tx)?;
-    let network = request.network.clone().unwrap_or_else(|| "testnet-10".to_string());
+    let network = request
+        .network
+        .clone()
+        .unwrap_or_else(|| "testnet-10".to_string());
     let (network_type, address_prefix) = kaspa_network_descriptor(&network)?;
     let account = request.account.unwrap_or(0);
     let change = request.change.unwrap_or(0);
@@ -345,7 +436,11 @@ fn build_signed_carrier_tx(request: &BuildAndSignCarrierTxRequest) -> Result<Bui
         .clone()
         .unwrap_or_else(|| DEFAULT_LANE_ID.to_string());
     let subnetwork_id = parse_igra_lane_id(&lane_id)?;
-    let timeout = Duration::from_secs(request.mining_timeout_secs.unwrap_or(DEFAULT_MINING_TIMEOUT_SECS));
+    let timeout = Duration::from_secs(
+        request
+            .mining_timeout_secs
+            .unwrap_or(DEFAULT_MINING_TIMEOUT_SECS),
+    );
     let utxos = with_tokio_runtime(|| async {
         let client = connect_kaspa_rpc(rpc_url).await?;
         client
@@ -424,7 +519,10 @@ fn validate_canonical_raw_tx(raw_tx: &[u8]) -> Result<(), String> {
         .first()
         .ok_or_else(|| "empty canonical raw transaction bytes".to_string())?;
     if *first == 0x03 || *first == 0x04 {
-        return Err("EIP-4844 and EIP-7702 canonical transactions are not supported by Igra carrier".to_string());
+        return Err(
+            "EIP-4844 and EIP-7702 canonical transactions are not supported by Igra carrier"
+                .to_string(),
+        );
     }
     if raw_tx.len() > IGRA_MAX_L2DATA_BYTES {
         return Err(format!(
@@ -453,7 +551,10 @@ fn decode_hex(value: &str, label: &str) -> Result<Vec<u8>, String> {
 }
 
 fn normalize_hex(value: &str, label: &str) -> Result<String, String> {
-    let value = value.trim().trim_start_matches("0x").trim_start_matches("0X");
+    let value = value
+        .trim()
+        .trim_start_matches("0x")
+        .trim_start_matches("0X");
     if value.is_empty() {
         return Err(format!("{label} cannot be empty"));
     }
@@ -478,7 +579,9 @@ fn kaspa_network_descriptor(
 ) -> Result<(KaspaNetworkType, KaspaAddressPrefix), String> {
     match network.trim().to_ascii_lowercase().as_str() {
         "mainnet" | "kaspa-mainnet" => Ok((KaspaNetworkType::Mainnet, KaspaAddressPrefix::Mainnet)),
-        "testnet" | "testnet-10" | "tn10" => Ok((KaspaNetworkType::Testnet, KaspaAddressPrefix::Testnet)),
+        "testnet" | "testnet-10" | "tn10" => {
+            Ok((KaspaNetworkType::Testnet, KaspaAddressPrefix::Testnet))
+        }
         "devnet" => Ok((KaspaNetworkType::Devnet, KaspaAddressPrefix::Devnet)),
         "simnet" => Ok((KaspaNetworkType::Simnet, KaspaAddressPrefix::Simnet)),
         other => Err(format!("unsupported Kaspa network: {other}")),
@@ -513,7 +616,11 @@ fn kaspa_address_from_private_key(
         .map_err(|err| format!("failed to parse Kaspa secret key: {err}"))?;
     let public_key = kaspa_bip32::secp256k1::PublicKey::from_secret_key_global(&secret);
     let payload = public_key.x_only_public_key().0.serialize();
-    Ok(KaspaAddress::new(prefix, KaspaAddressVersion::PubKey, &payload))
+    Ok(KaspaAddress::new(
+        prefix,
+        KaspaAddressVersion::PubKey,
+        &payload,
+    ))
 }
 
 fn build_payload_with_nonce(header: u8, l2data: &[u8], nonce: u32) -> Vec<u8> {
@@ -706,10 +813,9 @@ fn mine_and_build_signed_payload_transaction(
         }
 
         let non_contextual = mass_calculator.calc_non_contextual_masses(&signed.tx);
-        let contextual =
-            mass_calculator.calc_contextual_masses(&signed.as_verifiable()).ok_or_else(|| {
-                "failed to calculate Kaspa tx storage mass".to_string()
-            })?;
+        let contextual = mass_calculator
+            .calc_contextual_masses(&signed.as_verifiable())
+            .ok_or_else(|| "failed to calculate Kaspa tx storage mass".to_string())?;
         let storage_mass = contextual.storage_mass;
         let mass = KaspaMass::new(non_contextual, contextual).normalized_max(&mass_cofactors);
         if mass > MAX_STANDARD_KASPA_TX_MASS {
@@ -774,6 +880,38 @@ fn to_java_json<T: Serialize>(env: &mut JNIEnv, value: &T) -> jstring {
     env.new_string(json)
         .expect("failed to allocate Java string")
         .into_raw()
+}
+
+fn read_c_string(value: *const c_char) -> Result<String, String> {
+    if value.is_null() {
+        return Err("params JSON pointer was null".to_string());
+    }
+
+    unsafe {
+        CStr::from_ptr(value)
+            .to_str()
+            .map(str::to_owned)
+            .map_err(|err| format!("params JSON was not valid UTF-8: {err}"))
+    }
+}
+
+fn to_c_json<T: Serialize>(value: &T) -> *mut c_char {
+    let json = serde_json::to_string(value).unwrap_or_else(|err| {
+        format!(
+            "{{\"errorCode\":\"E_IGRA_KASPA_JSON_FAILED\",\"message\":\"failed to encode JSON: {err}\"}}"
+        )
+    });
+    match CString::new(json) {
+        Ok(value) => value.into_raw(),
+        Err(err) => {
+            let fallback = format!(
+                "{{\"errorCode\":\"E_IGRA_KASPA_JSON_FAILED\",\"message\":\"failed to encode C string: {err}\"}}"
+            );
+            CString::new(fallback)
+                .expect("fallback JSON does not contain interior NUL")
+                .into_raw()
+        }
+    }
 }
 
 #[cfg(test)]

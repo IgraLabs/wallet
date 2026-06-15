@@ -1,21 +1,23 @@
 # Igra Kaspa Native Bridge
 
 This bridge is the M1 boundary for full Kaspa carrier ownership in Kraken Wallet.
-Android now links a Rusty-Kaspa native backend and can derive the carrier
-address, build/sign a Kaspa carrier transaction, and submit it over Kaspa gRPC.
-iOS still has the placeholder module and fails closed for carrier signing.
+Android and iOS now link the shared Rusty-Kaspa native backend and can derive
+the carrier address, build/sign a Kaspa carrier transaction, and submit it over
+Kaspa gRPC.
 
 ## Current State
 
 - `NativeModules.IgraKaspa` is registered on Android and iOS.
 - Android links a Rust JNI backend built from `native/igra-kaspa`.
+- iOS links a Rust static library through a C ABI shim built from
+  `native/igra-kaspa`.
 - `getBridgeStatus()` reports whether the Rust backend is live.
-- Android `deriveCarrierAddress()` can derive a Kaspa carrier address from an
+- `deriveCarrierAddress()` can derive a Kaspa carrier address from an
   unlocked wallet seed buffer supplied as `seedHex`.
-- Android `buildAndSignCarrierTx()` fetches UTXOs, wraps the signed canonical
-  EVM transaction as Igra canonical raw L2Data, mines the Kaspa txid prefix,
-  signs the Kaspa carrier tx, and returns serialized Kaspa RPC transaction JSON.
-- Android `submitCarrierTx()` submits that serialized Kaspa transaction to the
+- `buildAndSignCarrierTx()` fetches UTXOs, wraps the signed canonical EVM
+  transaction as Igra canonical raw L2Data, mines the Kaspa txid prefix, signs
+  the Kaspa carrier tx, and returns serialized Kaspa RPC transaction JSON.
+- `submitCarrierTx()` submits that serialized Kaspa transaction to the
   configured Kaspa gRPC endpoint.
 - In-app Send and WalletConnect/browser `eth_sendTransaction` use the native
   carrier path for Igra canonical when the wallet seed is unlocked. The app
@@ -106,6 +108,36 @@ The pinned public Rusty-Kaspa revision currently fails for
 assembly build script has no Android x86_64 case. Use an arm64 emulator/device
 for this branch unless that upstream build script is patched.
 
+## iOS Build
+
+The iOS app builds the Rust backend as a static library from an Xcode build
+phase:
+
+```sh
+rustup target add aarch64-apple-ios aarch64-apple-ios-sim x86_64-apple-ios
+cd ios
+pod install
+xcodebuild -workspace SuperWallet.xcworkspace -scheme SuperWallet -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO ONLY_ACTIVE_ARCH=YES ARCHS=arm64 build
+```
+
+The build phase writes:
+
+```text
+native/igra-kaspa/target/ios-universal/{iphoneos|iphonesimulator}/libigra_kaspa.a
+```
+
+Xcode 26 notes:
+
+- Run `xcodebuild -runFirstLaunch` once on a clean machine.
+- Install the iOS simulator runtime if Xcode reports that the platform is
+  missing, for example `xcodebuild -downloadPlatform iOS -architectureVariant arm64`.
+- The Podfile forces `fmt` to C++17 because Xcode 26 rejects `fmt 11.0.2` under
+  C++20 consteval checks.
+
+The iOS Rust build includes an iOS-only `sys_alloc_aligned` shim because this
+Rusty-Kaspa revision pulls RISC0 through `kaspa-txscript` unconditionally. The
+carrier wallet path does not execute zk proof code.
+
 ## Performance Check
 
 Run on a real device or emulator after installing a development build:
@@ -136,7 +168,6 @@ Observed Android emulator bridge numbers from this branch:
 
 ## Remaining Work
 
-- Add iOS Rust backend linkage.
 - Implement `getCarrierBalance()`.
 - Add a visible carrier-address/funding surface so the team can copy the Kaspa
   carrier address without using debug tooling.
