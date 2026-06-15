@@ -449,7 +449,13 @@ export class EVMRPCTransport implements Transport<unknown, SignTransactionReques
     _handle: (txs: Transaction[]) => Promise<boolean>,
   ): Promise<void> {}
 
-  async prepareTransaction(network: EVMNetwork, walletData: WalletData, state: unknown, transaction: SignTransactionRequest, fee?: EVMFeeOption) {
+  async prepareTransaction(
+    network: EVMNetwork,
+    walletData: WalletData,
+    state: unknown,
+    transaction: SignTransactionRequest,
+    fee?: EVMFeeOption,
+  ): Promise<PreparedTransaction<EthersTransactionRequest>> {
     const thisAddress = await network.deriveAddress(walletData);
 
     const nonce = Number(transaction.nonce ?? (await this.provider.getTransactionCount(await network.deriveAddress(walletData))));

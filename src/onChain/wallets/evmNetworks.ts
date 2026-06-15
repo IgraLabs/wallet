@@ -191,7 +191,6 @@ export const igraCanonicalNetwork = new EVMNetwork({
   nativeTokenLabel: 'Igra KAS',
   label: 'Igra Canonical',
   blockExplorer: undefined,
-  isTestnet: true,
   disable1559: true,
   defaultGasLimit: 21000,
   krakenConnectNetworkId: null,

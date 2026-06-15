@@ -90,12 +90,38 @@ class IgraKaspaModule(reactContext: ReactApplicationContext) : ReactContextBaseJ
 
     @ReactMethod
     fun buildAndSignCarrierTx(params: ReadableMap, promise: Promise) {
-        rejectRustBackendMissing(promise, "buildAndSignCarrierTx")
+        if (!IgraKaspaRustBackend.isLoaded()) {
+            rejectRustBackendMissing(promise, "buildAndSignCarrierTx")
+            return
+        }
+
+        try {
+            val result = IgraKaspaRustBackend.buildAndSignCarrierTxJson(readableMapToJson(params).toString())
+            resolveJsonObject(result, promise)
+        } catch (error: Throwable) {
+            promise.reject(
+                "E_IGRA_KASPA_RUST_BUILD_SIGN_FAILED",
+                "buildAndSignCarrierTx failed in the Rusty-Kaspa native backend: ${error.message}"
+            )
+        }
     }
 
     @ReactMethod
     fun submitCarrierTx(params: ReadableMap, promise: Promise) {
-        rejectRustBackendMissing(promise, "submitCarrierTx")
+        if (!IgraKaspaRustBackend.isLoaded()) {
+            rejectRustBackendMissing(promise, "submitCarrierTx")
+            return
+        }
+
+        try {
+            val result = IgraKaspaRustBackend.submitCarrierTxJson(readableMapToJson(params).toString())
+            resolveJsonObject(result, promise)
+        } catch (error: Throwable) {
+            promise.reject(
+                "E_IGRA_KASPA_RUST_SUBMIT_FAILED",
+                "submitCarrierTx failed in the Rusty-Kaspa native backend: ${error.message}"
+            )
+        }
     }
 
     private fun rejectRustBackendMissing(promise: Promise, method: String) {
@@ -121,7 +147,7 @@ class IgraKaspaModule(reactContext: ReactApplicationContext) : ReactContextBaseJ
         while (iterator.hasNextKey()) {
             val key = iterator.nextKey()
             if (params.isNull(key)) {
-                JSONObject.NULL
+                json.put(key, JSONObject.NULL)
             } else {
                 when (params.getType(key)) {
                     ReadableType.Boolean -> json.put(key, params.getBoolean(key))

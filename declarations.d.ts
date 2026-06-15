@@ -39,6 +39,10 @@ declare module 'react-native-config' {
     KRAKEN_CONNECT_OAUTH_AUTH_URI: string;
     IGRA_CANONICAL_RPC_URI?: string;
     IGRA_CANONICAL_CARRIER_RPC_URI?: string;
+    IGRA_KASPA_RPC_URI?: string;
+    IGRA_KASPA_NETWORK?: string;
+    IGRA_KASPA_TX_ID_PREFIX?: string;
+    IGRA_KASPA_LANE_ID?: string;
     PERSONAL_API_KEY?: string;
     PERSONAL_PRIVATE_KEY?: string;
     DEBUG_KEYSTORE_ANDROID_PASSWORD: string;

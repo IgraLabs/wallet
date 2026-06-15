@@ -1,4 +1,4 @@
-import type { EVMHarmonyTransport, EVMNetwork } from '@/onChain/wallets/evm';
+import type { EVMNetwork } from '@/onChain/wallets/evm';
 import { type WalletStorage, getWalletStorage } from '@/onChain/wallets/walletState';
 import { TRANSACTION_TYPES } from '@/realm/transactions/const';
 import type { RealmWallet } from '@/realm/wallets';
@@ -10,7 +10,7 @@ import type { PageInfo } from './types';
 import type Realm from 'realm';
 
 import type { ReactNavigationDispatch } from '/modules/wallet-connect';
-import { getWarningFromSimulation } from '/modules/wallet-connect/utils';
+import { type EVMTransactionTransport, getWarningFromSimulation } from '/modules/wallet-connect/utils';
 import { type TransactionObject, adaptTransactionObjectToDefinitionList, classifyTransaction } from '/modules/wallet-connect/web3Wallet/ethereum';
 import {
   getSignStructuredParamsFromTransaction,
@@ -21,7 +21,7 @@ interface Options {
   method: EvmRpcMethod;
   network: EVMNetwork;
   transaction: TransactionObject;
-  transport: EVMHarmonyTransport;
+  transport: EVMTransactionTransport;
   wallet: RealmWallet;
   dispatch: ReactNavigationDispatch;
   pageInfo: PageInfo | null;

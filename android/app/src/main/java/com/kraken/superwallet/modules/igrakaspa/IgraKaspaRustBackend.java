@@ -32,4 +32,8 @@ public final class IgraKaspaRustBackend {
     public static native String backendStatusJson();
 
     public static native String deriveCarrierAddressJson(String paramsJson);
+
+    public static native String buildAndSignCarrierTxJson(String paramsJson);
+
+    public static native String submitCarrierTxJson(String paramsJson);
 }

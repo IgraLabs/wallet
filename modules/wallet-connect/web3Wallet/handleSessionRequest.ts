@@ -5,7 +5,7 @@ import type { SecuredKeychainContext } from '@/secureStore/SecuredKeychainProvid
 
 import { WALLET_CONNECT_SUPPORTED_SESSION_NAMESPACE_KEYS } from '../consts';
 
-import { isEVMHarmonyTransport, isEVMNetwork, isSolanaNetwork, isSolanaTransport, splitWalletString } from '../utils';
+import { isEVMHarmonyTransport, isEVMNetwork, isEVMTransactionTransport, isSolanaNetwork, isSolanaTransport, splitWalletString } from '../utils';
 
 import * as ethereum from './ethereum';
 import { WALLET_CONNECT_ETH_SIGN_TYPES } from './ethereum/types';
@@ -120,7 +120,7 @@ export async function handleSessionRequest({ event, dispatch, realm, web3Wallet,
 
       case WALLET_CONNECT_ETH_SIGN_TYPES.SIGN_TRANSACTION:
       case WALLET_CONNECT_ETH_SIGN_TYPES.SEND_TRANSACTION: {
-        if (!isEVMNetwork(network) || !isEVMHarmonyTransport(transport)) {
+        if (!isEVMNetwork(network) || !isEVMTransactionTransport(transport)) {
           handleError(`Unsupported network: ${network}`, 'ERROR_CONTEXT_PLACEHOLDER', {
             icon: 'plug-disconnected',
             text: loc.walletConnect.unsupported_network,

@@ -1,6 +1,6 @@
 import type { SimulationResult } from '@/api/types';
 import type { Network } from '@/onChain/wallets/base';
-import { EVMHarmonyTransport, EVMNetwork } from '@/onChain/wallets/evm';
+import { EVMHarmonyTransport, EVMNetwork, EVMRPCTransport } from '@/onChain/wallets/evm';
 import type { WalletType } from '@/onChain/wallets/registry';
 import { networkIdToNetworkName } from '@/onChain/wallets/registry';
 import { SolanaHarmonyTransport, SolanaNetwork } from '@/onChain/wallets/solana';
@@ -46,6 +46,12 @@ export function isEVMNetwork(network: Network): network is EVMNetwork {
 
 export function isEVMHarmonyTransport(transport: unknown): transport is EVMHarmonyTransport {
   return transport instanceof EVMHarmonyTransport;
+}
+
+export type EVMTransactionTransport = EVMHarmonyTransport | EVMRPCTransport;
+
+export function isEVMTransactionTransport(transport: unknown): transport is EVMTransactionTransport {
+  return transport instanceof EVMHarmonyTransport || transport instanceof EVMRPCTransport;
 }
 
 export function isSolanaNetwork(network: Network): network is SolanaNetwork {

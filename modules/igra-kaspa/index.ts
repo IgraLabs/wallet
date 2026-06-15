@@ -9,6 +9,7 @@ export type IgraKaspaBridgeStatus = {
   rustBackend: boolean;
   supportsCarrierSigning: boolean;
   supportsBridgeBenchmark: boolean;
+  supportsCarrierAddressDerivation?: boolean;
 };
 
 export type IgraKaspaBenchmarkResult = {
@@ -51,18 +52,44 @@ export type CarrierBalanceParams = {
 };
 
 export type BuildAndSignCarrierTxParams = {
-  keyRef: string;
+  keyRef?: string;
+  seedHex?: string;
   network: string;
   payloadHex: string;
-  rpcUrl?: string;
+  rpcUrl: string;
+  txIdPrefix?: string;
+  laneId?: string;
+  miningTimeoutSecs?: number;
+  account?: number;
+  change?: number;
+  index?: number;
+  derivationPath?: string;
   feePolicy?: Record<string, unknown>;
   selectedUtxos?: unknown[];
 };
 
 export type SubmitCarrierTxParams = {
-  rawTxHex: string;
-  network: string;
+  rawTxHex?: string;
+  rawTxJson?: string;
+  network?: string;
   rpcUrl: string;
+};
+
+export type BuildAndSignCarrierTxResult = {
+  rawTxJson: string;
+  carrierTxId: string;
+  sourceAddress: string;
+  network: string;
+  derivationPath: string;
+  txIdPrefix: string;
+  laneId: string;
+  payloadNonce: number;
+  payloadBytes: number;
+  l2dataBytes: number;
+};
+
+export type SubmitCarrierTxResult = {
+  kaspaTxId: string;
 };
 
 type IgraKaspaNativeModule = {
@@ -71,8 +98,8 @@ type IgraKaspaNativeModule = {
   benchmarkBridge(payloadBytes: number, iterations: number): Promise<IgraKaspaBenchmarkResult>;
   deriveCarrierAddress(params: DeriveCarrierAddressParams): Promise<{ address: string }>;
   getCarrierBalance(params: CarrierBalanceParams): Promise<unknown>;
-  buildAndSignCarrierTx(params: BuildAndSignCarrierTxParams): Promise<unknown>;
-  submitCarrierTx(params: SubmitCarrierTxParams): Promise<unknown>;
+  buildAndSignCarrierTx(params: BuildAndSignCarrierTxParams): Promise<BuildAndSignCarrierTxResult>;
+  submitCarrierTx(params: SubmitCarrierTxParams): Promise<SubmitCarrierTxResult>;
 };
 
 function requireNativeIgraKaspa(): IgraKaspaNativeModule {
@@ -128,11 +155,11 @@ export async function getCarrierBalance(params: CarrierBalanceParams): Promise<u
   return requireNativeIgraKaspa().getCarrierBalance(params);
 }
 
-export async function buildAndSignCarrierTx(params: BuildAndSignCarrierTxParams): Promise<unknown> {
+export async function buildAndSignCarrierTx(params: BuildAndSignCarrierTxParams): Promise<BuildAndSignCarrierTxResult> {
   return requireNativeIgraKaspa().buildAndSignCarrierTx(params);
 }
 
-export async function submitCarrierTx(params: SubmitCarrierTxParams): Promise<unknown> {
+export async function submitCarrierTx(params: SubmitCarrierTxParams): Promise<SubmitCarrierTxResult> {
   return requireNativeIgraKaspa().submitCarrierTx(params);
 }
 

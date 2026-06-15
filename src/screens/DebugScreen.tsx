@@ -256,7 +256,7 @@ export const DebugScreen = () => {
         duration: 4000,
       });
     } catch (error) {
-      handleError(error, 'Igra Kaspa bridge benchmark failed');
+      handleError(error, 'ERROR_CONTEXT_PLACEHOLDER', { text: 'Igra Kaspa bridge benchmark failed' });
     } finally {
       setIsMeasuringIgraKaspaBridge(false);
     }

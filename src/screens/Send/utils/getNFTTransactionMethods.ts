@@ -1,4 +1,5 @@
 import type { FeeOption } from '@/api/types';
+import { isIgraCanonicalTransport } from '@/onChain/igra/IgraCanonicalTransport';
 import type { PreparedTransaction } from '@/onChain/wallets/base';
 import { getImplForWallet } from '@/onChain/wallets/registry';
 import type { IWalletStorage } from '@/onChain/wallets/walletState';
@@ -26,13 +27,22 @@ export function getNFTTransactionMethods<TType, TRequest, TFeeOption extends Fee
   };
 
   const sign = async (preparedTx: PreparedTransaction<TType>, seed: ArrayBuffer) => {
+    const txhex = await network.signTransaction({ ...wallet, seed: { data: seed } }, preparedTx.data);
+
     return {
       ...preparedTx,
-      txhex: await network.signTransaction({ ...wallet, seed: { data: seed } }, preparedTx.data),
+      igraCarrierTx: isIgraCanonicalTransport(transport) ? await transport.buildCarrierTransaction(txhex, seed, wallet.accountIdx) : undefined,
+      txhex,
     };
   };
 
-  const broadcast = (signed: Awaited<ReturnType<typeof sign>>) => transport.broadcastTransaction(network, signed.txhex);
+  const broadcast = (signed: Awaited<ReturnType<typeof sign>>) => {
+    if (isIgraCanonicalTransport(transport) && signed.igraCarrierTx) {
+      return transport.submitCarrierTransaction(signed.igraCarrierTx);
+    }
+
+    return transport.broadcastTransaction(network, signed.txhex);
+  };
 
   return {
     create,

@@ -3,6 +3,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useCallback, useMemo } from 'react';
 
 import type { EVMFeeOption } from '@/api/types';
+import { isIgraCanonicalTransport } from '@/onChain/igra/IgraCanonicalTransport';
 import { getImplForWallet } from '@/onChain/wallets/registry';
 import type { WalletStorage } from '@/onChain/wallets/walletState';
 import { getWalletStorage } from '@/onChain/wallets/walletState';
@@ -16,7 +17,7 @@ import { openSignMessageApproveModal } from '../openSignMessageApproveModal';
 import { openSignTransactionModal } from '../openSignTransactionApprovalModal';
 import { type PageInfo } from '../types';
 
-import { isEVMHarmonyTransport, isEVMNetwork } from '/modules/wallet-connect/utils';
+import { isEVMHarmonyTransport, isEVMNetwork, isEVMTransactionTransport } from '/modules/wallet-connect/utils';
 import { type TransactionObject, ethSignFnMap } from '/modules/wallet-connect/web3Wallet/ethereum';
 
 export const useDappSignRequests = (wallet: RealmWallet, pageInfo: PageInfo | null) => {
@@ -55,9 +56,9 @@ export const useDappSignRequests = (wallet: RealmWallet, pageInfo: PageInfo | nu
     [transport, network, wallet, dispatch, pageInfo, getSeed],
   );
 
-  const signEvmTransaction = useCallback(
+  const signEvmTransactionWithSeed = useCallback(
     async (method: EvmRpcMethod, params: unknown[], domain: string, baseUrl: string) => {
-      if (!isEVMHarmonyTransport(transport) || !isEVMNetwork(network)) {
+      if (!isEVMTransactionTransport(transport) || !isEVMNetwork(network)) {
         throw new Error(`Can't sign an EVM transaction with a non-EVM wallet`);
       }
 
@@ -98,7 +99,7 @@ export const useDappSignRequests = (wallet: RealmWallet, pageInfo: PageInfo | nu
         true,
       );
 
-      return network.signTransaction(
+      const signedTx = await network.signTransaction(
         {
           ...wallet,
           seed: {
@@ -107,8 +108,18 @@ export const useDappSignRequests = (wallet: RealmWallet, pageInfo: PageInfo | nu
         },
         finalPreparedTransaction.data,
       );
+
+      return { seed, signedTx };
     },
     [transport, network, wallet, dispatch, pageInfo, realm, currency, getSeed],
+  );
+
+  const signEvmTransaction = useCallback(
+    async (method: EvmRpcMethod, params: unknown[], domain: string, baseUrl: string) => {
+      const result = await signEvmTransactionWithSeed(method, params, domain, baseUrl);
+      return result?.signedTx;
+    },
+    [signEvmTransactionWithSeed],
   );
 
   const signAndSendEvmTransaction = useCallback(
@@ -117,15 +128,19 @@ export const useDappSignRequests = (wallet: RealmWallet, pageInfo: PageInfo | nu
         throw new Error(`Can't sign an EVM transaction with a non-EVM wallet`);
       }
 
-      const signature = await signEvmTransaction(method, params, domain, baseUrl);
+      const result = await signEvmTransactionWithSeed(method, params, domain, baseUrl);
 
-      if (signature === undefined) {
+      if (result === undefined) {
         return;
       }
 
-      return transport.broadcastTransaction(network, signature);
+      if (isIgraCanonicalTransport(transport)) {
+        return transport.broadcastCarrierTransaction(network, result.signedTx, result.seed, wallet.accountIdx);
+      }
+
+      return transport.broadcastTransaction(network, result.signedTx);
     },
-    [network, signEvmTransaction, transport],
+    [network, signEvmTransactionWithSeed, transport, wallet.accountIdx],
   );
 
   return useMemo(

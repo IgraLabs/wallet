@@ -147,7 +147,7 @@ export const TESTNET_COINS = entries(Networks)
   .filter(([t, n]) => isTestNet(n) && !DEPRECATED_NETWORKS.includes(t as WalletType))
   .map(([type]) => type as WalletType);
 
-export const DEFAULT_GALLERY_COINS: WalletType[] = ['HDsegwitBech32', 'ethereum', 'polygon', 'solana', 'avalanche', 'dogecoin'];
+export const DEFAULT_GALLERY_COINS: WalletType[] = ['HDsegwitBech32', 'ethereum', 'polygon', 'solana', 'avalanche', 'dogecoin', 'igraCanonical'];
 
 export const networkIdToNetworkName = fromPairs<WalletType>(
   entries(Networks).map(([type, network]) => {

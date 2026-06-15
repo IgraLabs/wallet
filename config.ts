@@ -35,3 +35,7 @@ export const KRAKEN_CONNECT_OAUTH_AUTH_URI = Config.KRAKEN_CONNECT_OAUTH_AUTH_UR
 
 export const IGRA_CANONICAL_RPC_URI = Config.IGRA_CANONICAL_RPC_URI || 'http://stage-roman.igralabs.com:39445';
 export const IGRA_CANONICAL_CARRIER_RPC_URI = Config.IGRA_CANONICAL_CARRIER_RPC_URI || 'http://127.0.0.1:39546';
+export const IGRA_KASPA_RPC_URI = Config.IGRA_KASPA_RPC_URI || 'grpc://stage-roman.igralabs.com:16210';
+export const IGRA_KASPA_NETWORK = Config.IGRA_KASPA_NETWORK || 'testnet-10';
+export const IGRA_KASPA_TX_ID_PREFIX = Config.IGRA_KASPA_TX_ID_PREFIX || '97b4';
+export const IGRA_KASPA_LANE_ID = Config.IGRA_KASPA_LANE_ID || '97b10000';

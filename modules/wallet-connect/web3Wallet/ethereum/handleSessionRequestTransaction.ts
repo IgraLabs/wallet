@@ -1,6 +1,7 @@
 import type { EVMFeeOption } from '@/api/types';
 import { showToast } from '@/components/Toast';
-import type { EVMHarmonyTransport, EVMNetwork } from '@/onChain/wallets/evm';
+import { isIgraCanonicalTransport } from '@/onChain/igra/IgraCanonicalTransport';
+import type { EVMNetwork } from '@/onChain/wallets/evm';
 import type { WalletStorage } from '@/onChain/wallets/walletState';
 import { getWalletStorage } from '@/onChain/wallets/walletState';
 import { getAppCurrency } from '@/realm/settings/useAppCurrency';
@@ -10,7 +11,7 @@ import type { SecuredKeychainContext } from '@/secureStore/SecuredKeychainProvid
 
 import { handleRedirect } from '../../connectAppWithWalletConnect/handleRedirect';
 
-import { getWarningFromSimulation } from '../../utils';
+import { type EVMTransactionTransport, getWarningFromSimulation } from '../../utils';
 import { getSignStructuredParamsFromTransaction, navigateToSignStructuredTransactionPage } from '../navigateToSignStructuredTransactionPage';
 import { responseRejected } from '../responseRejected';
 import { sessionIsDeepLinked } from '../sessionIsDeepLinked';
@@ -50,7 +51,7 @@ export async function handleSessionRequestTransaction({
   network: EVMNetwork;
   realm: Realm;
   transaction: TransactionObject;
-  transport: EVMHarmonyTransport;
+  transport: EVMTransactionTransport;
   topic: string;
   web3Wallet: IWalletKit;
   getSeed: SecuredKeychainContext['getSeed'];
@@ -138,7 +139,9 @@ export async function handleSessionRequestTransaction({
       }
 
       if (method === WALLET_CONNECT_ETH_SIGN_TYPES.SEND_TRANSACTION) {
-        const txid = await transport.broadcastTransaction(network, result);
+        const txid = isIgraCanonicalTransport(transport)
+          ? await transport.broadcastCarrierTransaction(network, result, seed, foundWallet.accountIdx)
+          : await transport.broadcastTransaction(network, result);
         await web3Wallet.respondSessionRequest({ topic, response: { id, result: txid, jsonrpc: '2.0' } });
       }
       const isDeepLinked = sessionIsDeepLinked(realm, topic);
