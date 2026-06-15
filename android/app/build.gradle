@@ -165,6 +165,39 @@ android {
             pickFirsts += ['**/libc++_shared.so']
         }
     }
+
+    sourceSets {
+        main {
+            jniLibs.srcDir("$buildDir/generated/igraKaspa/jniLibs")
+        }
+    }
+}
+
+def igraKaspaRustEnabled = (findProperty("igraKaspaRust") ?: "true").toBoolean()
+def igraKaspaRustTargets = (findProperty("igraKaspaRustTargets") ?: "arm64-v8a")
+    .split(",")
+    .collect { it.trim() }
+    .findAll { !it.isEmpty() }
+def igraKaspaRustCrateDir = file("../../native/igra-kaspa")
+def igraKaspaRustJniLibsDir = file("$buildDir/generated/igraKaspa/jniLibs")
+
+if (igraKaspaRustEnabled) {
+    tasks.register("cargoBuildIgraKaspaAndroid", Exec) {
+        group = "build"
+        description = "Builds the Igra Kaspa Rust JNI backend for Android."
+        workingDir igraKaspaRustCrateDir
+        environment "ANDROID_NDK_HOME", android.ndkDirectory.absolutePath
+        environment "ANDROID_NDK_ROOT", android.ndkDirectory.absolutePath
+        def cargoArgs = ["cargo", "ndk"]
+        igraKaspaRustTargets.each { target ->
+            cargoArgs.add("-t")
+            cargoArgs.add(target)
+        }
+        cargoArgs.addAll(["-o", igraKaspaRustJniLibsDir.absolutePath, "build", "--release"])
+        commandLine cargoArgs
+    }
+
+    preBuild.dependsOn("cargoBuildIgraKaspaAndroid")
 }
 
 // Exclude Conceal from react-native-keychain for 16KB page size compatibility

@@ -35,11 +35,13 @@ export type IgraKaspaRoundTripBenchmarkResult = {
 };
 
 export type DeriveCarrierAddressParams = {
-  keyRef: string;
+  keyRef?: string;
+  seedHex?: string;
   network: string;
   account?: number;
   change?: number;
   index?: number;
+  derivationPath?: string;
 };
 
 export type CarrierBalanceParams = {

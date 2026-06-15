@@ -100,4 +100,7 @@ coverage-ts
 .env
 .env.storybook
 
+# Rust native modules
+target/
+
 .kotlin/
